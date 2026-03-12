@@ -75,6 +75,22 @@ export type OnboardingResponse = {
   onboarding_completed: boolean;
 };
 
+export type OnboardingState = {
+  dietary_restrictions: string[];
+  cuisine_preferences: string[];
+  texture_preferences: string[];
+  dining_pace_preferences: string[];
+  social_preferences: string[];
+  drink_preferences: string[];
+  atmosphere_preferences: string[];
+  favorite_dining_experiences: string[];
+  favorite_restaurants: string[];
+  bio: string | null;
+  spice_tolerance: string | null;
+  price_sensitivity: string | null;
+  onboarding_completed: boolean;
+};
+
 export type ScoreBreakdownItem = {
   label: string;
   points: number;

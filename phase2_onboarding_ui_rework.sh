@@ -1,3 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="${1:-$(pwd)}"
+
+if [[ -d "$ROOT_DIR/frontend/src" ]]; then
+  FRONTEND_DIR="$ROOT_DIR/frontend"
+elif [[ -d "$ROOT_DIR/frontend/frontend/src" ]]; then
+  FRONTEND_DIR="$ROOT_DIR/frontend/frontend"
+else
+  echo "Error: could not find frontend/src from ROOT_DIR=$ROOT_DIR" >&2
+  echo "Run this script from the project root, or pass the project root as the first argument." >&2
+  exit 1
+fi
+
+cat > "$FRONTEND_DIR/src/pages/OnboardingPage.tsx" <<'EOF'
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
 import Badge from "../components/ui/Badge";
@@ -5,12 +21,7 @@ import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import { useAuth } from "../context/AuthContext";
 import { apiRequest } from "../lib/api";
-import {
-  OnboardingPayload,
-  OnboardingResponse,
-  OnboardingState,
-  RestaurantListItem
-} from "../types";
+import { OnboardingPayload, OnboardingResponse, RestaurantListItem } from "../types";
 
 type OnboardingFormState = {
   dietary_restrictions: string[];
@@ -147,23 +158,6 @@ function formatLabel(value: string) {
     .join(" ");
 }
 
-function toFormState(source: OnboardingState | null | undefined): OnboardingFormState {
-  return {
-    dietary_restrictions: [...(source?.dietary_restrictions ?? [])],
-    cuisine_preferences: [...(source?.cuisine_preferences ?? [])],
-    texture_preferences: [...(source?.texture_preferences ?? [])],
-    dining_pace_preferences: [...(source?.dining_pace_preferences ?? [])],
-    social_preferences: [...(source?.social_preferences ?? [])],
-    drink_preferences: [...(source?.drink_preferences ?? [])],
-    atmosphere_preferences: [...(source?.atmosphere_preferences ?? [])],
-    favorite_dining_experiences: [...(source?.favorite_dining_experiences ?? [])],
-    favorite_restaurants: [...(source?.favorite_restaurants ?? [])],
-    bio: source?.bio ?? "",
-    spice_tolerance: source?.spice_tolerance ?? "",
-    price_sensitivity: source?.price_sensitivity ?? ""
-  };
-}
-
 function MultiSelectField({
   label,
   hint,
@@ -235,87 +229,62 @@ export default function OnboardingPage() {
   const { refreshUser } = useAuth();
 
   const [form, setForm] = useState<OnboardingFormState>(emptyForm);
-  const [savedState, setSavedState] = useState<OnboardingFormState>(emptyForm);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [submittedJson, setSubmittedJson] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [restaurantOptions, setRestaurantOptions] = useState<string[]>([]);
   const [isLoadingRestaurants, setIsLoadingRestaurants] = useState(true);
-  const [isHydrating, setIsHydrating] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
 
-    async function hydrate() {
+    async function loadRestaurants() {
       try {
-        const [restaurants, onboardingState] = await Promise.all([
-          apiRequest<RestaurantListItem[]>("/restaurants"),
-          apiRequest<OnboardingState>("/onboarding")
-        ]);
-
-        if (cancelled) {
-          return;
+        const restaurants = await apiRequest<RestaurantListItem[]>("/restaurants");
+        if (!cancelled) {
+          setRestaurantOptions(restaurants.map((restaurant) => restaurant.name));
         }
-
-        const restaurantNames = restaurants.map((restaurant) => restaurant.name);
-        const nextForm = toFormState(onboardingState);
-
-        setRestaurantOptions(restaurantNames);
-        setSavedState(nextForm);
-        setForm(nextForm);
-
-        if (onboardingState.onboarding_completed) {
-          setMessage("Your SAVR profile has been loaded successfully.");
-        }
-      } catch (err) {
+      } catch {
         if (!cancelled) {
           setRestaurantOptions([]);
-          setError(
-            err instanceof Error
-              ? err.message
-              : "We could not load your saved profile right now."
-          );
         }
       } finally {
         if (!cancelled) {
           setIsLoadingRestaurants(false);
-          setIsHydrating(false);
         }
       }
     }
 
-    void hydrate();
+    void loadRestaurants();
 
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const completionStats = useMemo(
+  const previewStats = useMemo(
     () => [
-      { label: "Cuisine", value: form.cuisine_preferences.length },
-      { label: "Atmosphere", value: form.atmosphere_preferences.length },
-      { label: "Drinks", value: form.drink_preferences.length },
-      { label: "Favorites", value: form.favorite_restaurants.length }
+      { label: "Cuisine picks", value: form.cuisine_preferences.length },
+      { label: "Drink picks", value: form.drink_preferences.length },
+      { label: "Atmosphere picks", value: form.atmosphere_preferences.length },
+      { label: "Favorite venues", value: form.favorite_restaurants.length }
     ],
     [form]
   );
 
-  function toggleArrayField(
-    field: keyof Pick<
-      OnboardingFormState,
-      | "dietary_restrictions"
-      | "cuisine_preferences"
-      | "texture_preferences"
-      | "dining_pace_preferences"
-      | "social_preferences"
-      | "drink_preferences"
-      | "atmosphere_preferences"
-      | "favorite_dining_experiences"
-      | "favorite_restaurants"
-    >,
-    value: string
-  ) {
+  function toggleArrayField(field: keyof Pick<
+    OnboardingFormState,
+    | "dietary_restrictions"
+    | "cuisine_preferences"
+    | "texture_preferences"
+    | "dining_pace_preferences"
+    | "social_preferences"
+    | "drink_preferences"
+    | "atmosphere_preferences"
+    | "favorite_dining_experiences"
+    | "favorite_restaurants"
+  >, value: string) {
     setForm((current) => {
       const existing = current[field];
       const next = existing.includes(value)
@@ -329,21 +298,11 @@ export default function OnboardingPage() {
     });
   }
 
-  function resetToSavedState() {
-    setForm({
-      ...savedState,
-      dietary_restrictions: [...savedState.dietary_restrictions],
-      cuisine_preferences: [...savedState.cuisine_preferences],
-      texture_preferences: [...savedState.texture_preferences],
-      dining_pace_preferences: [...savedState.dining_pace_preferences],
-      social_preferences: [...savedState.social_preferences],
-      drink_preferences: [...savedState.drink_preferences],
-      atmosphere_preferences: [...savedState.atmosphere_preferences],
-      favorite_dining_experiences: [...savedState.favorite_dining_experiences],
-      favorite_restaurants: [...savedState.favorite_restaurants]
-    });
-    setMessage("Your form has been reset to the last saved version.");
+  function resetForm() {
+    setForm(emptyForm);
+    setMessage("");
     setError("");
+    setSubmittedJson("");
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -372,39 +331,25 @@ export default function OnboardingPage() {
         method: "POST",
         body: payload
       });
-
-      const persisted = await apiRequest<OnboardingState>("/onboarding");
-      const persistedForm = toFormState(persisted);
-
-      setSavedState(persistedForm);
-      setForm(persistedForm);
-
       await refreshUser();
-
       setMessage(response.message);
+      setSubmittedJson(JSON.stringify(payload, null, 2));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "We could not save your profile.");
+      setError(err instanceof Error ? err.message : "Failed to save onboarding");
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  if (isHydrating) {
-    return (
-      <div className="auth-shell">
-        <div className="auth-card">Loading your SAVR profile...</div>
-      </div>
-    );
-  }
-
   return (
     <div className="grid" style={{ gap: "1.25rem" }}>
       <section className="card">
-        <p className="navbar-eyebrow">SAVR profile</p>
-        <h1 className="page-title">Shape your dining preferences</h1>
+        <p className="navbar-eyebrow">Profile setup</p>
+        <h1 className="page-title">Build your SAVR dining profile</h1>
         <p className="muted" style={{ maxWidth: "820px", marginBottom: 0 }}>
-          Tell SAVR what kinds of meals, spaces, moods, and social settings fit you best
-          so recommendations feel more relevant and more personal.
+          Choose the dining signals that best describe your taste, pace, social style,
+          and atmosphere preferences. This version is selection-based to make onboarding
+          much faster and easier to complete.
         </p>
       </section>
 
@@ -413,20 +358,20 @@ export default function OnboardingPage() {
 
       <section className="grid grid-2 onboarding-grid">
         <Card
-          title="Your dining profile"
-          subtitle="Update the signals SAVR uses to personalize recommendations"
-          actions={<Badge tone="accent">Profile</Badge>}
+          title="Preference studio"
+          subtitle="Guided selections that shape recommendation quality"
+          actions={<Badge tone="accent">Phase 2</Badge>}
         >
           <form className="form" onSubmit={handleSubmit}>
             <div className="list">
               <div className="item">
                 <p className="navbar-eyebrow" style={{ marginBottom: "0.55rem" }}>
-                  Taste and cravings
+                  Taste profile
                 </p>
                 <div className="grid" style={{ gap: "1rem" }}>
                   <MultiSelectField
                     label="Cuisine preferences"
-                    hint="Choose the cuisines you most often enjoy."
+                    hint="Select one or more cuisine styles you usually enjoy."
                     options={[...optionCatalog.cuisine_preferences]}
                     selected={form.cuisine_preferences}
                     onToggle={(value) => toggleArrayField("cuisine_preferences", value)}
@@ -434,7 +379,7 @@ export default function OnboardingPage() {
 
                   <MultiSelectField
                     label="Texture preferences"
-                    hint="Choose the textures and food qualities you tend to look for."
+                    hint="Pick textures and sensory qualities you usually gravitate toward."
                     options={[...optionCatalog.texture_preferences]}
                     selected={form.texture_preferences}
                     onToggle={(value) => toggleArrayField("texture_preferences", value)}
@@ -444,12 +389,12 @@ export default function OnboardingPage() {
 
               <div className="item">
                 <p className="navbar-eyebrow" style={{ marginBottom: "0.55rem" }}>
-                  Pace and setting
+                  Dining behavior
                 </p>
                 <div className="grid" style={{ gap: "1rem" }}>
                   <MultiSelectField
                     label="Dining pace"
-                    hint="Select the rhythm you prefer for meals and outings."
+                    hint="Choose how you like the night to feel from a timing perspective."
                     options={[...optionCatalog.dining_pace_preferences]}
                     selected={form.dining_pace_preferences}
                     onToggle={(value) => toggleArrayField("dining_pace_preferences", value)}
@@ -457,7 +402,7 @@ export default function OnboardingPage() {
 
                   <MultiSelectField
                     label="Social preferences"
-                    hint="Choose the social situations that most often describe your dining plans."
+                    hint="Choose the kinds of social contexts you most often dine in."
                     options={[...optionCatalog.social_preferences]}
                     selected={form.social_preferences}
                     onToggle={(value) => toggleArrayField("social_preferences", value)}
@@ -465,7 +410,7 @@ export default function OnboardingPage() {
 
                   <MultiSelectField
                     label="Atmosphere preferences"
-                    hint="Pick the moods and environments that feel right for you."
+                    hint="Select the moods and environments that match your ideal experience."
                     options={[...optionCatalog.atmosphere_preferences]}
                     selected={form.atmosphere_preferences}
                     onToggle={(value) => toggleArrayField("atmosphere_preferences", value)}
@@ -475,12 +420,12 @@ export default function OnboardingPage() {
 
               <div className="item">
                 <p className="navbar-eyebrow" style={{ marginBottom: "0.55rem" }}>
-                  Restrictions and drink style
+                  Food and drink constraints
                 </p>
                 <div className="grid" style={{ gap: "1rem" }}>
                   <MultiSelectField
                     label="Dietary restrictions"
-                    hint="Select any restrictions or requirements SAVR should respect."
+                    hint="Select any restrictions the recommendation engine should respect."
                     options={[...optionCatalog.dietary_restrictions]}
                     selected={form.dietary_restrictions}
                     onToggle={(value) => toggleArrayField("dietary_restrictions", value)}
@@ -488,7 +433,7 @@ export default function OnboardingPage() {
 
                   <MultiSelectField
                     label="Drink preferences"
-                    hint="Choose the drink styles you usually want included in a dining experience."
+                    hint="Select the drink styles you usually want included in your experience."
                     options={[...optionCatalog.drink_preferences]}
                     selected={form.drink_preferences}
                     onToggle={(value) => toggleArrayField("drink_preferences", value)}
@@ -499,7 +444,7 @@ export default function OnboardingPage() {
                       id="spice_tolerance"
                       label="Spice tolerance"
                       value={form.spice_tolerance}
-                      placeholder="Select your spice tolerance"
+                      placeholder="Select spice tolerance"
                       options={spiceOptions}
                       onChange={(value) =>
                         setForm((current) => ({ ...current, spice_tolerance: value }))
@@ -508,9 +453,9 @@ export default function OnboardingPage() {
 
                     <SelectField
                       id="price_sensitivity"
-                      label="Budget comfort"
+                      label="Price sensitivity"
                       value={form.price_sensitivity}
-                      placeholder="Select your usual budget range"
+                      placeholder="Select budget comfort"
                       options={priceOptions}
                       onChange={(value) =>
                         setForm((current) => ({ ...current, price_sensitivity: value }))
@@ -527,7 +472,7 @@ export default function OnboardingPage() {
                 <div className="grid" style={{ gap: "1rem" }}>
                   <MultiSelectField
                     label="Favorite dining experiences"
-                    hint="Choose the kinds of outings you want SAVR to remember and prioritize."
+                    hint="Choose the types of outings you most want SAVR to remember."
                     options={[...optionCatalog.favorite_dining_experiences]}
                     selected={form.favorite_dining_experiences}
                     onToggle={(value) =>
@@ -539,10 +484,10 @@ export default function OnboardingPage() {
                     label="Favorite restaurants"
                     hint={
                       isLoadingRestaurants
-                        ? "Loading available restaurants..."
+                        ? "Loading your available restaurant list..."
                         : restaurantOptions.length > 0
-                          ? "Select the restaurants you already like most."
-                          : "No restaurants are currently available to select."
+                          ? "Choose one or more restaurants from the live restaurant catalog."
+                          : "No restaurant list was available, so this will stay empty for now."
                     }
                     options={restaurantOptions}
                     selected={form.favorite_restaurants}
@@ -550,7 +495,7 @@ export default function OnboardingPage() {
                   />
 
                   <div className="form-row">
-                    <label htmlFor="bio">Dining note</label>
+                    <label htmlFor="bio">Dining bio</label>
                     <textarea
                       id="bio"
                       rows={4}
@@ -561,7 +506,7 @@ export default function OnboardingPage() {
                       }
                     />
                     <small className="muted">
-                      A short note helps SAVR understand your style beyond the selected options.
+                      Keep this short and preference-focused. This gives extra context to your profile.
                     </small>
                   </div>
                 </div>
@@ -570,11 +515,11 @@ export default function OnboardingPage() {
 
             <div className="button-row">
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : "Save profile"}
+                {isSubmitting ? "Saving profile..." : "Save SAVR profile"}
               </Button>
 
-              <Button type="button" variant="ghost" onClick={resetToSavedState}>
-                Reset to saved
+              <Button type="button" variant="ghost" onClick={resetForm}>
+                Reset selections
               </Button>
             </div>
           </form>
@@ -582,12 +527,12 @@ export default function OnboardingPage() {
 
         <div className="grid" style={{ gap: "1rem" }}>
           <Card
-            title="Profile completeness"
-            subtitle="A simple view of how much preference detail you have added"
-            actions={<Badge tone="success">Summary</Badge>}
+            title="Selection summary"
+            subtitle="Quick view of how much detail your profile currently contains"
+            actions={<Badge tone="success">Live preview</Badge>}
           >
             <div className="grid grid-2">
-              {completionStats.map((stat) => (
+              {previewStats.map((stat) => (
                 <div key={stat.label} className="item">
                   <p className="muted" style={{ marginBottom: "0.25rem" }}>
                     {stat.label}
@@ -599,35 +544,128 @@ export default function OnboardingPage() {
           </Card>
 
           <Card
-            title="Why this matters"
-            subtitle="A more complete profile helps recommendations feel sharper and more personal"
-            actions={<Badge>Tips</Badge>}
+            title="Current profile snapshot"
+            subtitle="This shows the exact payload being prepared for the backend"
+            actions={<Badge>JSON view</Badge>}
           >
-            <div className="list">
-              <div className="item">
-                <strong>More accurate restaurant matching</strong>
-                <p className="muted" style={{ marginBottom: 0 }}>
-                  Cuisine, atmosphere, and pace selections help SAVR narrow the results more intelligently.
-                </p>
-              </div>
-
-              <div className="item">
-                <strong>Better dining context</strong>
-                <p className="muted" style={{ marginBottom: 0 }}>
-                  Social and drink preferences help the system understand the kind of outing you are planning.
-                </p>
-              </div>
-
-              <div className="item">
-                <strong>Stronger long-term recommendations</strong>
-                <p className="muted" style={{ marginBottom: 0 }}>
-                  Favorites and profile notes give SAVR more memory to build on as you keep using the platform.
-                </p>
-              </div>
-            </div>
+            <pre className="code-block">
+{JSON.stringify(
+  {
+    dietary_restrictions: form.dietary_restrictions,
+    cuisine_preferences: form.cuisine_preferences,
+    texture_preferences: form.texture_preferences,
+    dining_pace_preferences: form.dining_pace_preferences,
+    social_preferences: form.social_preferences,
+    drink_preferences: form.drink_preferences,
+    atmosphere_preferences: form.atmosphere_preferences,
+    favorite_dining_experiences: form.favorite_dining_experiences,
+    favorite_restaurants: form.favorite_restaurants,
+    bio: form.bio || null,
+    spice_tolerance: form.spice_tolerance || null,
+    price_sensitivity: form.price_sensitivity || null
+  },
+  null,
+  2
+)}
+            </pre>
           </Card>
+
+          {submittedJson ? (
+            <Card
+              title="Last submitted payload"
+              subtitle="Captured after a successful save"
+              actions={<Badge tone="accent">Saved</Badge>}
+            >
+              <pre className="code-block">{submittedJson}</pre>
+            </Card>
+          ) : null}
         </div>
       </section>
     </div>
   );
 }
+EOF
+
+python3 - <<PY
+from pathlib import Path
+
+styles_path = Path(r"$FRONTEND_DIR/src/styles.css")
+text = styles_path.read_text()
+
+marker = "/* PHASE 2 ONBOARDING UI REWORK */"
+if marker not in text:
+    text += """
+
+/* PHASE 2 ONBOARDING UI REWORK */
+.onboarding-grid {
+  align-items: start;
+}
+
+.multi-select-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.65rem;
+}
+
+.multi-select-chip {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.45);
+  color: var(--text-main);
+  padding: 0.72rem 0.95rem;
+  border-radius: 999px;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.multi-select-chip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(96, 165, 250, 0.34);
+  background: rgba(30, 41, 59, 0.75);
+}
+
+.multi-select-chip--active {
+  border-color: rgba(96, 165, 250, 0.44);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.22), rgba(139, 92, 246, 0.18));
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.28);
+}
+
+textarea {
+  width: 100%;
+  min-height: 110px;
+  resize: vertical;
+  border-radius: 0.95rem;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(8, 15, 28, 0.84);
+  color: var(--text-main);
+  padding: 0.9rem 1rem;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+textarea:focus {
+  border-color: rgba(96, 165, 250, 0.42);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+.code-block {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border-radius: 1rem;
+  padding: 1rem;
+  background: rgba(8, 15, 28, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  color: #dbeafe;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  overflow-x: auto;
+}
+"""
+    styles_path.write_text(text)
+PY
+
+echo "Phase 2 onboarding UI rework applied successfully in: $FRONTEND_DIR"

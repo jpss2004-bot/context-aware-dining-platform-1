@@ -1,80 +1,145 @@
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
-import Badge from '../components/ui/Badge';
-import Button from '../components/ui/Button';
-import Card from '../components/ui/Card';
-import { useAuth } from '../context/AuthContext';
+import Badge from "../components/ui/Badge";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
+import { useAuth } from "../context/AuthContext";
+import { apiRequest } from "../lib/api";
+import { OnboardingState } from "../types";
 
-const workflowSteps = [
-  {
-    title: 'Refine your Taste Profile',
-    description:
-      'Keep cuisine, drink, atmosphere, and pace signals current so SAVR can curate stronger matches.'
-  },
-  {
-    title: 'Browse the Venue Guide',
-    description:
-      'Review the restaurant catalog, compare venue signals, and understand what the engine can recommend.'
-  },
-  {
-    title: 'Launch Curated Matches',
-    description:
-      'Use guided blocks, natural language, or surprise mode depending on how much control you want.'
+function formatLabel(value: string) {
+  return value
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function renderSignalList(values: string[], emptyText: string) {
+  if (values.length === 0) {
+    return <p className="muted" style={{ marginBottom: 0 }}>{emptyText}</p>;
   }
-];
 
-const quickPanels = [
-  {
-    title: 'Match modes',
-    value: '3',
-    subtitle: 'Guided, prompt-based, and surprise flows remain fully available.',
-    tone: 'accent' as const
-  },
-  {
-    title: 'Taste profile',
-    value: 'Live',
-    subtitle: 'Your onboarding data still powers the recommendation engine.',
-    tone: 'success' as const
-  },
-  {
-    title: 'SAVR Log',
-    value: 'Active',
-    subtitle: 'Saved outings keep building memory for future recommendations.',
-    tone: 'default' as const
-  }
-];
+  return (
+    <div className="dashboard-chip-row">
+      {values.slice(0, 6).map((value) => (
+        <span key={value} className="dashboard-chip">
+          {formatLabel(value)}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const firstName = user?.first_name || 'Guest';
+  const firstName = user?.first_name || "Guest";
+
+  const [profileState, setProfileState] = useState<OnboardingState | null>(null);
+  const [profileError, setProfileError] = useState("");
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadProfileSnapshot() {
+      try {
+        const state = await apiRequest<OnboardingState>("/onboarding");
+        if (!cancelled) {
+          setProfileState(state);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setProfileError(
+            err instanceof Error ? err.message : "We could not load your profile summary."
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingProfile(false);
+        }
+      }
+    }
+
+    void loadProfileSnapshot();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const quickPanels = useMemo(
+    () => [
+      {
+        title: "Profile status",
+        value: profileState?.onboarding_completed ? "Ready" : "Incomplete",
+        subtitle: profileState?.onboarding_completed
+          ? "Your SAVR profile is active and can be refined anytime."
+          : "Finish your profile to improve your recommendation quality.",
+        tone: profileState?.onboarding_completed ? ("success" as const) : ("accent" as const)
+      },
+      {
+        title: "Cuisine preferences",
+        value: String(profileState?.cuisine_preferences.length ?? 0),
+        subtitle: "Saved cuisine signals currently helping shape your results.",
+        tone: "accent" as const
+      },
+      {
+        title: "Atmosphere preferences",
+        value: String(profileState?.atmosphere_preferences.length ?? 0),
+        subtitle: "Saved mood and setting signals available for matching.",
+        tone: "default" as const
+      }
+    ],
+    [profileState]
+  );
+
+  const workflowSteps = [
+    {
+      title: "Review your profile",
+      description:
+        "Make sure your taste, pace, drink, and atmosphere selections reflect the kind of dining experience you actually want."
+    },
+    {
+      title: "Explore restaurants",
+      description:
+        "Browse the restaurant catalog and confirm your favorites align with the venues available in the system."
+    },
+    {
+      title: "Generate recommendations",
+      description:
+        "Use the recommendation workflow after your profile is current so the system has stronger context."
+    }
+  ];
 
   return (
-    <div className="grid" style={{ gap: '1.25rem' }}>
-      <section className="hero-card">
-        <div className="grid" style={{ gap: '1rem' }}>
+    <div className="grid" style={{ gap: "1.25rem" }}>
+      <section className="card">
+        <div className="grid" style={{ gap: "1rem" }}>
           <div>
-            <p className="navbar-eyebrow">SAVR overview</p>
-            <h1 className="page-title">Good evening, {firstName}</h1>
-            <p className="muted" style={{ maxWidth: '760px', marginBottom: 0 }}>
-              SAVR is your dining assistant for planning nights worth savoring. From taste signals to venue research to saved outings, every workflow stays intact — now with a clearer, warmer interface.
+            <p className="navbar-eyebrow">Welcome</p>
+            <h1 className="page-title">Welcome back, {firstName}</h1>
+            <p className="muted" style={{ maxWidth: "760px", marginBottom: 0 }}>
+              Use this space to review your profile, check what SAVR already knows about
+              your dining style, and move into recommendations when you are ready.
             </p>
           </div>
 
           <div>
-            <Badge>Curated discovery</Badge>
-            <Badge tone="accent">Brand-aligned shell</Badge>
-            <Badge tone="success">Backend connected</Badge>
+            <Badge>SAVR</Badge>
+            <Badge tone="accent">Profile-aware</Badge>
+            <Badge tone="success">Ready to explore</Badge>
           </div>
 
           <div className="button-row">
             <Link to="/recommendations">
-              <Button>Open Curated Matches</Button>
+              <Button>Find recommendations</Button>
             </Link>
             <Link to="/restaurants">
-              <Button variant="ghost">Browse Venue Guide</Button>
+              <Button variant="ghost">Browse restaurants</Button>
             </Link>
             <Link to="/onboarding">
-              <Button variant="secondary">Refine Taste Profile</Button>
+              <Button variant="secondary">Edit profile</Button>
             </Link>
           </div>
         </div>
@@ -82,18 +147,80 @@ export default function DashboardPage() {
 
       <section className="grid grid-3">
         {quickPanels.map((panel) => (
-          <Card key={panel.title} title={panel.title} subtitle={panel.subtitle} actions={<Badge tone={panel.tone}>{panel.title}</Badge>}>
+          <Card
+            key={panel.title}
+            title={panel.title}
+            subtitle={panel.subtitle}
+            actions={<Badge tone={panel.tone}>{panel.title}</Badge>}
+          >
             <p className="kpi">{panel.value}</p>
           </Card>
         ))}
       </section>
 
       <section className="grid grid-2">
-        <Card title="Tonight's best flow" subtitle="A clean path through the product" actions={<Badge tone="accent">Suggested</Badge>}>
+        <Card
+          title="Your saved profile"
+          subtitle="A quick summary of the preferences currently guiding SAVR"
+          actions={<Badge tone="accent">Profile</Badge>}
+        >
+          {isLoadingProfile ? (
+            <p className="muted" style={{ marginBottom: 0 }}>Loading your profile...</p>
+          ) : profileError ? (
+            <div className="error">{profileError}</div>
+          ) : (
+            <div className="list">
+              <div className="item">
+                <strong>Cuisine preferences</strong>
+                {renderSignalList(
+                  profileState?.cuisine_preferences ?? [],
+                  "No cuisine preferences saved yet."
+                )}
+              </div>
+
+              <div className="item">
+                <strong>Drink preferences</strong>
+                {renderSignalList(
+                  profileState?.drink_preferences ?? [],
+                  "No drink preferences saved yet."
+                )}
+              </div>
+
+              <div className="item">
+                <strong>Atmosphere preferences</strong>
+                {renderSignalList(
+                  profileState?.atmosphere_preferences ?? [],
+                  "No atmosphere preferences saved yet."
+                )}
+              </div>
+
+              <div className="item">
+                <strong>Favorite restaurants</strong>
+                {renderSignalList(
+                  profileState?.favorite_restaurants ?? [],
+                  "No favorite restaurants saved yet."
+                )}
+              </div>
+
+              <div className="item">
+                <strong>Dining note</strong>
+                <p className="muted" style={{ marginBottom: 0 }}>
+                  {profileState?.bio?.trim() || "No dining note saved yet."}
+                </p>
+              </div>
+            </div>
+          )}
+        </Card>
+
+        <Card
+          title="Suggested next steps"
+          subtitle="A simple path for users exploring the product for the first time"
+          actions={<Badge tone="success">Guide</Badge>}
+        >
           <div className="list">
             {workflowSteps.map((step, index) => (
               <div className="item" key={step.title}>
-                <p className="navbar-eyebrow" style={{ marginBottom: '0.35rem' }}>
+                <p className="navbar-eyebrow" style={{ marginBottom: "0.35rem" }}>
                   Step {index + 1}
                 </p>
                 <strong>{step.title}</strong>
@@ -103,38 +230,15 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
-        </Card>
-
-        <Card title="What changed visually" subtitle="Same product, sharper presentation" actions={<Badge tone="success">SAVR refresh</Badge>}>
-          <div className="list">
-            <div className="item">
-              <strong>Warmer hierarchy</strong>
-              <p className="muted" style={{ marginBottom: 0 }}>
-                The interface now reflects the premium, discovery-led tone from the SAVR mood board instead of a generic SaaS skin.
-              </p>
-            </div>
-            <div className="item">
-              <strong>Clearer navigation</strong>
-              <p className="muted" style={{ marginBottom: 0 }}>
-                Feature areas are grouped around what the user wants to do: define taste, browse venues, generate matches, and save memories.
-              </p>
-            </div>
-            <div className="item">
-              <strong>More intuitive language</strong>
-              <p className="muted" style={{ marginBottom: 0 }}>
-                Placeholder product labels were replaced with SAVR-specific language that feels more curated and experiential.
-              </p>
-            </div>
-          </div>
 
           <hr />
 
           <div className="button-row">
-            <Link to="/experiences">
-              <Button variant="ghost">Open SAVR Log</Button>
+            <Link to="/onboarding">
+              <Button variant="ghost">Review profile</Button>
             </Link>
             <Link to="/recommendations">
-              <Button>Generate curated matches</Button>
+              <Button>Start exploring</Button>
             </Link>
           </div>
         </Card>

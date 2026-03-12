@@ -483,3 +483,122 @@ hr { border: 0; border-top: 1px solid rgba(120, 30, 90, 0.08); margin: 1rem 0; }
   .sidebar-brand { font-size: 1.7rem; }
   .navbar-title { font-size: 2.5rem; }
 }
+
+
+/* PHASE 2 ONBOARDING UI REWORK */
+.onboarding-grid {
+  align-items: start;
+}
+
+.multi-select-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.65rem;
+}
+
+.multi-select-chip {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.45);
+  color: var(--text-main);
+  padding: 0.72rem 0.95rem;
+  border-radius: 999px;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.multi-select-chip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(96, 165, 250, 0.34);
+  background: rgba(30, 41, 59, 0.75);
+}
+
+.multi-select-chip--active {
+  border-color: rgba(96, 165, 250, 0.44);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.22), rgba(139, 92, 246, 0.18));
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.28);
+}
+
+textarea {
+  width: 100%;
+  min-height: 110px;
+  resize: vertical;
+  border-radius: 0.95rem;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(8, 15, 28, 0.84);
+  color: var(--text-main);
+  padding: 0.9rem 1rem;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+textarea:focus {
+  border-color: rgba(96, 165, 250, 0.42);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+.code-block {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border-radius: 1rem;
+  padding: 1rem;
+  background: rgba(8, 15, 28, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  color: #dbeafe;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  overflow-x: auto;
+}
+
+
+/* PHASE 4 SAVR SHELL AND PROFILE SYNC */
+.dashboard-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.dashboard-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.62);
+  color: var(--text-main);
+}
+
+.sidebar-brand-mark {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(139, 92, 246, 0.9));
+}
+
+
+/* PHASE 5 DEPLOYMENT READINESS POLISH */
+.sidebar-footer {
+  margin-top: auto;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.sidebar-logout {
+  width: 100%;
+}
+
+.page-title {
+  letter-spacing: -0.02em;
+}
+
+.success,
+.error {
+  border-radius: 1rem;
+}
+
+.card .muted {
+  line-height: 1.55;
+}
