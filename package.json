@@ -1,0 +1,25 @@
+{
+  "name": "context-aware-dining-platform",
+  "version": "1.0.0",
+  "description": "A full-stack web application that helps users discover restaurants, dishes, and drinks based on their preferences, dining history, atmosphere goals, dietary needs, and social context.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:e2e": "playwright test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jpsamanosuarez/context-aware-dining-platform.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/jpsamanosuarez/context-aware-dining-platform/issues"
+  },
+  "homepage": "https://github.com/jpsamanosuarez/context-aware-dining-platform#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
+  }
+}

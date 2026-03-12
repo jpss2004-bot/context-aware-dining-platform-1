@@ -1,5 +1,8 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 
+import Badge from "../components/ui/Badge";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
 import { useAuth } from "../context/AuthContext";
 import { apiRequest } from "../lib/api";
 import { OnboardingPayload, OnboardingResponse } from "../types";
@@ -10,6 +13,42 @@ function splitList(value: string): string[] {
     .map((item) => item.trim())
     .filter(Boolean);
 }
+
+const sections = [
+  {
+    title: "Taste profile",
+    subtitle: "Cuisine and texture preferences",
+    fields: ["cuisine_preferences", "texture_preferences"]
+  },
+  {
+    title: "Dining behavior",
+    subtitle: "How you like a night out to feel",
+    fields: [
+      "dining_pace_preferences",
+      "social_preferences",
+      "atmosphere_preferences"
+    ]
+  },
+  {
+    title: "Food and drink constraints",
+    subtitle: "Restrictions, drinks, spice, and budget",
+    fields: [
+      "dietary_restrictions",
+      "drink_preferences",
+      "spice_tolerance",
+      "price_sensitivity"
+    ]
+  },
+  {
+    title: "Dining memory",
+    subtitle: "Favorite places and past experiences",
+    fields: [
+      "favorite_dining_experiences",
+      "favorite_restaurants",
+      "bio"
+    ]
+  }
+];
 
 export default function OnboardingPage() {
   const { refreshUser } = useAuth();
@@ -33,6 +72,15 @@ export default function OnboardingPage() {
   const [error, setError] = useState("");
   const [submittedJson, setSubmittedJson] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const previewStats = useMemo(
+    () => [
+      { label: "Cuisine tags", value: splitList(form.cuisine_preferences).length },
+      { label: "Drink tags", value: splitList(form.drink_preferences).length },
+      { label: "Atmosphere tags", value: splitList(form.atmosphere_preferences).length }
+    ],
+    [form]
+  );
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -71,126 +119,283 @@ export default function OnboardingPage() {
   }
 
   return (
-    <>
+    <div className="grid" style={{ gap: "1.25rem" }}>
       <section className="card">
-        <h1 className="page-title">Let&apos;s get to know you</h1>
-        <p className="muted">
-          Enter comma-separated values for preference lists. This page writes directly to your working backend.
+        <p className="navbar-eyebrow">Profile setup</p>
+        <h1 className="page-title">Refine your dining identity</h1>
+        <p className="muted" style={{ maxWidth: "820px", marginBottom: 0 }}>
+          This onboarding flow still writes directly to your working backend, but it
+          now feels more like a guided preference studio. Use comma-separated values
+          where needed.
         </p>
       </section>
 
-      <section className="card">
-        {error ? <div className="error">{error}</div> : null}
-        {message ? <div className="success">{message}</div> : null}
+      {error ? <div className="error">{error}</div> : null}
+      {message ? <div className="success">{message}</div> : null}
 
-        <form className="form" onSubmit={handleSubmit}>
-          <div className="grid grid-2">
-            <div className="form-row">
-              <label>Dietary restrictions</label>
-              <input
-                value={form.dietary_restrictions}
-                onChange={(e) => setForm({ ...form, dietary_restrictions: e.target.value })}
-              />
+      <section className="grid grid-2">
+        <Card
+          title="Preference profile"
+          subtitle="Structured signals that drive recommendation quality"
+          actions={<Badge tone="accent">Onboarding</Badge>}
+        >
+          <form className="form" onSubmit={handleSubmit}>
+            <div className="list">
+              <div className="item">
+                <p className="navbar-eyebrow" style={{ marginBottom: "0.4rem" }}>
+                  Taste profile
+                </p>
+                <div className="grid grid-2">
+                  <div className="form-row">
+                    <label htmlFor="cuisine_preferences">Cuisine preferences</label>
+                    <input
+                      id="cuisine_preferences"
+                      value={form.cuisine_preferences}
+                      onChange={(e) =>
+                        setForm({ ...form, cuisine_preferences: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <label htmlFor="texture_preferences">Texture preferences</label>
+                    <input
+                      id="texture_preferences"
+                      value={form.texture_preferences}
+                      onChange={(e) =>
+                        setForm({ ...form, texture_preferences: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="item">
+                <p className="navbar-eyebrow" style={{ marginBottom: "0.4rem" }}>
+                  Dining behavior
+                </p>
+                <div className="grid grid-2">
+                  <div className="form-row">
+                    <label htmlFor="dining_pace_preferences">Dining pace preferences</label>
+                    <input
+                      id="dining_pace_preferences"
+                      value={form.dining_pace_preferences}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          dining_pace_preferences: e.target.value
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <label htmlFor="social_preferences">Social preferences</label>
+                    <input
+                      id="social_preferences"
+                      value={form.social_preferences}
+                      onChange={(e) =>
+                        setForm({ ...form, social_preferences: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <label htmlFor="atmosphere_preferences">Atmosphere preferences</label>
+                    <input
+                      id="atmosphere_preferences"
+                      value={form.atmosphere_preferences}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          atmosphere_preferences: e.target.value
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="item">
+                <p className="navbar-eyebrow" style={{ marginBottom: "0.4rem" }}>
+                  Food and drink constraints
+                </p>
+                <div className="grid grid-2">
+                  <div className="form-row">
+                    <label htmlFor="dietary_restrictions">Dietary restrictions</label>
+                    <input
+                      id="dietary_restrictions"
+                      value={form.dietary_restrictions}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          dietary_restrictions: e.target.value
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <label htmlFor="drink_preferences">Drink preferences</label>
+                    <input
+                      id="drink_preferences"
+                      value={form.drink_preferences}
+                      onChange={(e) =>
+                        setForm({ ...form, drink_preferences: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <label htmlFor="spice_tolerance">Spice tolerance</label>
+                    <input
+                      id="spice_tolerance"
+                      value={form.spice_tolerance}
+                      onChange={(e) =>
+                        setForm({ ...form, spice_tolerance: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <label htmlFor="price_sensitivity">Price sensitivity</label>
+                    <input
+                      id="price_sensitivity"
+                      value={form.price_sensitivity}
+                      onChange={(e) =>
+                        setForm({ ...form, price_sensitivity: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="item">
+                <p className="navbar-eyebrow" style={{ marginBottom: "0.4rem" }}>
+                  Dining memory
+                </p>
+                <div className="grid" style={{ gap: "1rem" }}>
+                  <div className="form-row">
+                    <label htmlFor="favorite_dining_experiences">
+                      Favorite dining experiences
+                    </label>
+                    <input
+                      id="favorite_dining_experiences"
+                      value={form.favorite_dining_experiences}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          favorite_dining_experiences: e.target.value
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <label htmlFor="favorite_restaurants">Favorite restaurants</label>
+                    <input
+                      id="favorite_restaurants"
+                      value={form.favorite_restaurants}
+                      onChange={(e) =>
+                        setForm({ ...form, favorite_restaurants: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <label htmlFor="bio">Bio</label>
+                    <textarea
+                      id="bio"
+                      value={form.bio}
+                      onChange={(e) => setForm({ ...form, bio: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="form-row">
-              <label>Cuisine preferences</label>
-              <input
-                value={form.cuisine_preferences}
-                onChange={(e) => setForm({ ...form, cuisine_preferences: e.target.value })}
-              />
+            <div className="button-row">
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Saving..." : "Save onboarding"}
+              </Button>
             </div>
+          </form>
+        </Card>
 
-            <div className="form-row">
-              <label>Texture preferences</label>
-              <input
-                value={form.texture_preferences}
-                onChange={(e) => setForm({ ...form, texture_preferences: e.target.value })}
-              />
-            </div>
+        <Card
+          title="Profile preview"
+          subtitle="Quick view of the signal quality you are sending to the backend"
+          actions={<Badge>{submittedJson ? "Updated" : "Draft"}</Badge>}
+        >
+          <div className="grid grid-3">
+            {previewStats.map((item) => (
+              <div className="item" key={item.label}>
+                <p className="navbar-eyebrow" style={{ marginBottom: "0.35rem" }}>
+                  {item.label}
+                </p>
+                <p className="kpi">{item.value}</p>
+              </div>
+            ))}
+          </div>
 
-            <div className="form-row">
-              <label>Dining pace preferences</label>
-              <input
-                value={form.dining_pace_preferences}
-                onChange={(e) => setForm({ ...form, dining_pace_preferences: e.target.value })}
-              />
-            </div>
-
-            <div className="form-row">
-              <label>Social preferences</label>
-              <input
-                value={form.social_preferences}
-                onChange={(e) => setForm({ ...form, social_preferences: e.target.value })}
-              />
-            </div>
-
-            <div className="form-row">
-              <label>Drink preferences</label>
-              <input
-                value={form.drink_preferences}
-                onChange={(e) => setForm({ ...form, drink_preferences: e.target.value })}
-              />
-            </div>
-
-            <div className="form-row">
-              <label>Atmosphere preferences</label>
-              <input
-                value={form.atmosphere_preferences}
-                onChange={(e) => setForm({ ...form, atmosphere_preferences: e.target.value })}
-              />
-            </div>
-
-            <div className="form-row">
-              <label>Favorite restaurants</label>
-              <input
-                value={form.favorite_restaurants}
-                onChange={(e) => setForm({ ...form, favorite_restaurants: e.target.value })}
-              />
-            </div>
-
-            <div className="form-row">
-              <label>Spice tolerance</label>
-              <input
-                value={form.spice_tolerance}
-                onChange={(e) => setForm({ ...form, spice_tolerance: e.target.value })}
-              />
-            </div>
-
-            <div className="form-row">
-              <label>Price sensitivity</label>
-              <input
-                value={form.price_sensitivity}
-                onChange={(e) => setForm({ ...form, price_sensitivity: e.target.value })}
-              />
+          <div className="item">
+            <strong>Current highlights</strong>
+            <div style={{ marginTop: "0.8rem" }}>
+              {splitList(form.cuisine_preferences).map((item) => (
+                <Badge key={`cuisine-${item}`}>{item}</Badge>
+              ))}
+              {splitList(form.drink_preferences).map((item) => (
+                <Badge key={`drink-${item}`} tone="accent">
+                  {item}
+                </Badge>
+              ))}
+              {splitList(form.atmosphere_preferences).map((item) => (
+                <Badge key={`atmosphere-${item}`} tone="success">
+                  {item}
+                </Badge>
+              ))}
             </div>
           </div>
 
-          <div className="form-row">
-            <label>Favorite dining experiences</label>
-            <input
-              value={form.favorite_dining_experiences}
-              onChange={(e) => setForm({ ...form, favorite_dining_experiences: e.target.value })}
-            />
+          <div className="item">
+            <strong>Section map</strong>
+            <div className="list" style={{ marginTop: "0.8rem" }}>
+              {sections.map((section) => (
+                <div key={section.title}>
+                  <strong>{section.title}</strong>
+                  <p className="muted" style={{ margin: "0.2rem 0 0" }}>
+                    {section.subtitle}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="form-row">
-            <label>Bio</label>
-            <textarea value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} />
-          </div>
-
-          <button className="button" disabled={isSubmitting} type="submit">
-            {isSubmitting ? "Saving..." : "Save onboarding"}
-          </button>
-        </form>
+          {submittedJson ? (
+            <div className="item">
+              <strong>Last submitted payload</strong>
+              <pre
+                className="json-box"
+                style={{
+                  margin: "0.8rem 0 0",
+                  overflowX: "auto",
+                  whiteSpace: "pre-wrap",
+                  color: "#cbd5e1"
+                }}
+              >
+                {submittedJson}
+              </pre>
+            </div>
+          ) : (
+            <div className="item">
+              <strong>No submission yet</strong>
+              <p className="muted" style={{ marginBottom: 0 }}>
+                Save onboarding to store the payload and refresh your user profile.
+              </p>
+            </div>
+          )}
+        </Card>
       </section>
-
-      {submittedJson ? (
-        <section className="card">
-          <h2>Last submitted payload</h2>
-          <pre className="json-box">{submittedJson}</pre>
-        </section>
-      ) : null}
-    </>
+    </div>
   );
 }

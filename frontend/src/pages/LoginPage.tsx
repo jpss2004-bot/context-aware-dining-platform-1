@@ -1,6 +1,9 @@
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import Badge from "../components/ui/Badge";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
 import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
@@ -29,16 +32,32 @@ export default function LoginPage() {
 
   return (
     <div className="auth-shell">
-      <div className="auth-card">
-        <h1 className="page-title">Login</h1>
-        <p className="muted">Sign in to access your dining profile, onboarding, and recommendations.</p>
+      <Card
+        className="auth-card"
+        title="Welcome back"
+        subtitle="Sign in to access your dining profile, onboarding, recommendation studio, and saved experience history."
+        actions={<Badge tone="accent">Secure access</Badge>}
+      >
+        <div className="item">
+          <strong>What you unlock</strong>
+          <div style={{ marginTop: "0.8rem" }}>
+            <Badge>Recommendations</Badge>
+            <Badge tone="accent">Restaurant discovery</Badge>
+            <Badge tone="success">Dining memory</Badge>
+          </div>
+        </div>
 
         {error ? <div className="error">{error}</div> : null}
 
         <form className="form" onSubmit={handleSubmit}>
           <div className="form-row">
             <label htmlFor="email">Email</label>
-            <input id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+            />
           </div>
 
           <div className="form-row">
@@ -48,18 +67,22 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
             />
           </div>
 
-          <button className="button" disabled={isSubmitting} type="submit">
+          <Button type="submit" disabled={isSubmitting} fullWidth>
             {isSubmitting ? "Signing in..." : "Login"}
-          </button>
+          </Button>
         </form>
 
-        <p>
-          Need an account? <Link to="/register">Register here</Link>
-        </p>
-      </div>
+        <div className="item">
+          <strong>Need an account?</strong>
+          <p className="muted" style={{ marginBottom: 0 }}>
+            <Link to="/register">Create one here</Link>
+          </p>
+        </div>
+      </Card>
     </div>
   );
 }

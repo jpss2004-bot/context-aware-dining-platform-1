@@ -1,6 +1,9 @@
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import Badge from "../components/ui/Badge";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
 import { useAuth } from "../context/AuthContext";
 
 export default function RegisterPage() {
@@ -36,9 +39,20 @@ export default function RegisterPage() {
 
   return (
     <div className="auth-shell">
-      <div className="auth-card">
-        <h1 className="page-title">Create account</h1>
-        <p className="muted">Set up your account to save dining preferences and recommendation history.</p>
+      <Card
+        className="auth-card"
+        title="Create account"
+        subtitle="Set up your account to save dining preferences, recommendation history, and dining experiences."
+        actions={<Badge tone="accent">New profile</Badge>}
+      >
+        <div className="item">
+          <strong>What this account supports</strong>
+          <div style={{ marginTop: "0.8rem" }}>
+            <Badge>Onboarding memory</Badge>
+            <Badge tone="accent">Recommendation modes</Badge>
+            <Badge tone="success">Experience logging</Badge>
+          </div>
+        </div>
 
         {error ? <div className="error">{error}</div> : null}
         {success ? <div className="success">{success}</div> : null}
@@ -83,15 +97,18 @@ export default function RegisterPage() {
             />
           </div>
 
-          <button className="button" disabled={isSubmitting} type="submit">
+          <Button type="submit" disabled={isSubmitting} fullWidth>
             {isSubmitting ? "Creating..." : "Register"}
-          </button>
+          </Button>
         </form>
 
-        <p>
-          Already have an account? <Link to="/login">Go to login</Link>
-        </p>
-      </div>
+        <div className="item">
+          <strong>Already have an account?</strong>
+          <p className="muted" style={{ marginBottom: 0 }}>
+            <Link to="/login">Go to login</Link>
+          </p>
+        </div>
+      </Card>
     </div>
   );
 }

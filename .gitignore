@@ -1,8 +1,21 @@
-.env
-backend/.venv/
-frontend/node_modules/
-dist/
-__pycache__/
-*.pyc
+# Mac
 .DS_Store
 
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
+# Node
+node_modules/
+
+# Build folders
+dist/
+build/
+
+# Archives
+*.zip

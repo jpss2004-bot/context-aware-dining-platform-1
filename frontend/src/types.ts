@@ -75,17 +75,42 @@ export type OnboardingResponse = {
   onboarding_completed: boolean;
 };
 
+export type ScoreBreakdownItem = {
+  label: string;
+  points: number;
+};
+
+export type RecommendationRequestSummary = {
+  outing_type?: string | null;
+  budget?: string | null;
+  pace?: string | null;
+  social_context?: string | null;
+  preferred_cuisines: string[];
+  drinks_focus: boolean;
+  atmosphere: string[];
+};
+
 export type RecommendationItem = {
   restaurant_id: number;
   restaurant_name: string;
   score: number;
+  rank?: number;
+  fit_label?: string;
   reasons: string[];
+  explanation?: string | null;
+  confidence_level?: "high" | "medium" | "exploratory" | string;
+  matched_signals?: string[];
+  penalized_signals?: string[];
+  score_breakdown?: ScoreBreakdownItem[];
   suggested_dishes: string[];
   suggested_drinks: string[];
 };
 
 export type RecommendationResponse = {
   mode: string;
+  engine_version?: string;
+  generated_at?: string;
+  request_summary?: RecommendationRequestSummary;
   results: RecommendationItem[];
 };
 
