@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import Layout from "./components/layout/Layout";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
+import { useAuth } from "./context/AuthContext";
 import DashboardPage from "./pages/DashboardPage";
 import ExperiencesPage from "./pages/ExperiencesPage";
 import LoginPage from "./pages/LoginPage";
@@ -10,10 +11,32 @@ import RecommendationsPage from "./pages/RecommendationsPage";
 import RegisterPage from "./pages/RegisterPage";
 import RestaurantsPage from "./pages/RestaurantsPage";
 
+function AppEntryRedirect() {
+  const { token, user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="auth-shell">
+        <div className="auth-card">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!user?.onboarding_completed) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  return <Navigate to="/dashboard" replace />;
+}
+
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/" element={<AppEntryRedirect />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
@@ -31,7 +54,7 @@ export default function App() {
       <Route
         path="/onboarding"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowIncompleteOnboarding redirectCompletedUsersTo="/dashboard">
             <Layout>
               <OnboardingPage />
             </Layout>
@@ -72,7 +95,7 @@ export default function App() {
         }
       />
 
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<AppEntryRedirect />} />
     </Routes>
   );
 }

@@ -21,7 +21,7 @@ type AuthContextValue = {
   token: string | null;
   isLoading: boolean;
   register: (payload: RegisterPayload) => Promise<void>;
-  login: (payload: LoginPayload) => Promise<void>;
+  login: (payload: LoginPayload) => Promise<AuthUser>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 };
@@ -79,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       token: response.access_token
     });
     setUser(me);
+    return me;
   }, []);
 
   const logout = useCallback(() => {
