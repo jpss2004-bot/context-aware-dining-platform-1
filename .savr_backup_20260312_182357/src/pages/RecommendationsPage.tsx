@@ -54,10 +54,10 @@ const modeMeta: Record<
   }
 > = {
   build: {
-    eyebrow: "Guided mode",
-    title: "Build Your SAVR Night",
+    eyebrow: "Structured mode",
+    title: "Build Your Night",
     subtitle:
-      "Choose clear experience blocks that map directly to the recommendation engine.",
+      "Build the night by clicking exact option blocks that map directly to the recommendation engine.",
     bullets: [
       "Uses canonical values shared with the backend scorer.",
       "Best for controlled demos and predictable comparisons.",
@@ -65,20 +65,20 @@ const modeMeta: Record<
     ]
   },
   describe: {
-    eyebrow: "Describe mode",
-    title: "Describe the Night",
+    eyebrow: "Prompt mode",
+    title: "Describe Your Night",
     subtitle:
-      "Describe the kind of night you want in natural language and let SAVR interpret it.",
+      "Write the kind of night you want in natural language and let the system interpret it.",
     bullets: [
-      "Best when the vibe matters more than rigid form fields.",
-      "Feels closer to a personal dining assistant.",
+      "Best when the vibe matters more than form fields.",
+      "Feels closer to a real assistant experience.",
       "Useful for testing natural-language intent parsing."
     ]
   },
   surprise: {
-    eyebrow: "Discovery mode",
-    title: "Let SAVR Surprise You",
-    subtitle: "Get recommendationes quickly with minimal friction.",
+    eyebrow: "Exploration mode",
+    title: "Surprise Me",
+    subtitle: "Get recommendations quickly with minimal friction.",
     bullets: [
       "Fastest path to discovery.",
       "Uses your saved preferences when available.",
@@ -557,7 +557,7 @@ export default function RecommendationsPage() {
         >
           <p className="navbar-eyebrow">Structured</p>
           <h3 style={{ marginTop: "0.35rem", marginBottom: "0.35rem" }}>
-            Build Your SAVR Night
+            Build Your Night
           </h3>
           <p className="muted" style={{ margin: 0 }}>
             Best when you want more control over the recommendation signals.
@@ -571,7 +571,7 @@ export default function RecommendationsPage() {
         >
           <p className="navbar-eyebrow">Natural language</p>
           <h3 style={{ marginTop: "0.35rem", marginBottom: "0.35rem" }}>
-            Describe the Night
+            Describe Your Night
           </h3>
           <p className="muted" style={{ margin: 0 }}>
             Best when you want to describe the vibe in your own words.
@@ -585,7 +585,7 @@ export default function RecommendationsPage() {
         >
           <p className="navbar-eyebrow">Fast path</p>
           <h3 style={{ marginTop: "0.35rem", marginBottom: "0.35rem" }}>
-            Let SAVR Surprise You
+            Surprise Me
           </h3>
           <p className="muted" style={{ margin: 0 }}>
             Best when you want novelty with almost no effort.
@@ -628,7 +628,7 @@ export default function RecommendationsPage() {
             <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>
               <div>
                 <p className="navbar-eyebrow">Saved runs</p>
-                <h3 style={{ marginTop: "0.35rem", marginBottom: "0.35rem" }}>Recent Build Your SAVR Night runs</h3>
+                <h3 style={{ marginTop: "0.35rem", marginBottom: "0.35rem" }}>Recent Build Your Night runs</h3>
                 <p className="muted" style={{ margin: 0 }}>
                   Reapply earlier builds fast and export the latest diagnostics for QA.
                 </p>
@@ -645,7 +645,7 @@ export default function RecommendationsPage() {
 
             {savedRuns.length === 0 ? (
               <p className="muted" style={{ marginTop: "1rem", marginBottom: 0 }}>
-                No saved runs yet. Generate a Build Your SAVR Night recommendation to populate this panel.
+                No saved runs yet. Generate a Build Your Night recommendation to populate this panel.
               </p>
             ) : (
               <div style={{ display: "grid", gap: "0.8rem", marginTop: "1rem" }}>

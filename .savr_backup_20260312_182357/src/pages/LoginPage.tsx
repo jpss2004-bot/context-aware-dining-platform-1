@@ -1,31 +1,30 @@
-import { FormEvent, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { FormEvent, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
-import Badge from '../components/ui/Badge';
-import Button from '../components/ui/Button';
-import Card from '../components/ui/Card';
-import { brandContent } from '../config/content';
-import { useAuth } from '../context/AuthContext';
+import Badge from "../components/ui/Badge";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState('jp@example.com');
-  const [password, setPassword] = useState('StrongPass123');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("jp@example.com");
+  const [password, setPassword] = useState("StrongPass123");
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    setError('');
+    setError("");
     setIsSubmitting(true);
 
     try {
       await login({ email, password });
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Sign-in failed');
+      setError(err instanceof Error ? err.message : "Login failed");
     } finally {
       setIsSubmitting(false);
     }
@@ -35,18 +34,16 @@ export default function LoginPage() {
     <div className="auth-shell">
       <Card
         className="auth-card"
-        title={brandContent.microcopy.loginTitle}
-        subtitle={brandContent.microcopy.loginSubtitle}
+        title="Welcome back"
+        subtitle="Sign in to access your dining profile, onboarding, recommendation studio, and saved experience history."
         actions={<Badge tone="accent">Secure access</Badge>}
       >
         <div className="item">
-          <strong>What opens inside SAVR</strong>
-          <div style={{ marginTop: '0.8rem' }}>
-            {brandContent.microcopy.authFeatures.map((feature, index) => (
-              <Badge key={feature} tone={index === 1 ? 'accent' : index === 2 ? 'success' : 'default'}>
-                {feature}
-              </Badge>
-            ))}
+          <strong>What you unlock</strong>
+          <div style={{ marginTop: "0.8rem" }}>
+            <Badge>Recommendations</Badge>
+            <Badge tone="accent">Restaurant discovery</Badge>
+            <Badge tone="success">Dining memory</Badge>
           </div>
         </div>
 
@@ -55,7 +52,12 @@ export default function LoginPage() {
         <form className="form" onSubmit={handleSubmit}>
           <div className="form-row">
             <label htmlFor="email">Email</label>
-            <input id="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+            <input
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+            />
           </div>
 
           <div className="form-row">
@@ -70,14 +72,14 @@ export default function LoginPage() {
           </div>
 
           <Button type="submit" disabled={isSubmitting} fullWidth>
-            {isSubmitting ? 'Opening SAVR...' : 'Enter SAVR'}
+            {isSubmitting ? "Signing in..." : "Login"}
           </Button>
         </form>
 
         <div className="item">
-          <strong>New here?</strong>
+          <strong>Need an account?</strong>
           <p className="muted" style={{ marginBottom: 0 }}>
-            <Link to="/register">Create your SAVR profile</Link>
+            <Link to="/register">Create one here</Link>
           </p>
         </div>
       </Card>

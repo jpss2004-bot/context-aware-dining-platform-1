@@ -1,27 +1,21 @@
-import { NavLink } from "react-router-dom";
+import { NavLink } from 'react-router-dom';
+
+import { brandContent } from '../../config/content';
 
 type SidebarProps = {
   userName?: string;
   onLogout: () => void;
 };
 
-const navItems = [
-  { to: "/dashboard", label: "Dashboard", short: "OV" },
-  { to: "/onboarding", label: "Onboarding", short: "ON" },
-  { to: "/recommendations", label: "Recommendations", short: "RE" },
-  { to: "/restaurants", label: "Restaurants", short: "RS" },
-  { to: "/experiences", label: "Experiences", short: "EX" }
-];
-
 export default function Sidebar({ userName, onLogout }: SidebarProps) {
   return (
     <aside className="app-sidebar">
       <div className="sidebar-brand-block">
-        <div className="sidebar-brand-mark">CA</div>
+        <div className="sidebar-brand-mark">SV</div>
 
         <div>
-          <p className="sidebar-eyebrow">Dining Intelligence</p>
-          <h1 className="sidebar-brand">Context-Aware Dining</h1>
+          <p className="sidebar-eyebrow">{brandContent.tagline}</p>
+          <h1 className="sidebar-brand">{brandContent.productName}</h1>
         </div>
       </div>
 
@@ -31,22 +25,20 @@ export default function Sidebar({ userName, onLogout }: SidebarProps) {
           <span className="sidebar-online-pill">Live</span>
         </div>
 
-        <strong className="sidebar-user-name">{userName || "Guest user"}</strong>
+        <strong className="sidebar-user-name">{userName || 'Guest user'}</strong>
 
-        <p className="muted">
-          Taste-led restaurant discovery and recommendation workflows.
-        </p>
+        <p className="muted">A personal dining assistant for the nights you want to savor.</p>
       </div>
 
       <nav className="sidebar-nav" aria-label="Primary navigation">
-        {navItems.map((item) => (
+        {brandContent.nav.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             className={({ isActive }) =>
-              ["sidebar-link", isActive ? "sidebar-link--active" : ""]
+              ['sidebar-link', isActive ? 'sidebar-link--active' : '']
                 .filter(Boolean)
-                .join(" ")
+                .join(' ')
             }
           >
             <span className="sidebar-link__icon">{item.short}</span>
@@ -57,16 +49,12 @@ export default function Sidebar({ userName, onLogout }: SidebarProps) {
 
       <div className="sidebar-footer">
         <div className="sidebar-footer-card">
-          <p className="sidebar-section-label">Workspace status</p>
-          <p className="muted">UI shell upgraded and ready for deeper page-level polish.</p>
+          <p className="sidebar-section-label">Brand note</p>
+          <p className="muted">Warm, curated, and discovery-led — without changing routes, features, or backend behavior.</p>
         </div>
 
-        <button
-          className="button ghost sidebar-logout"
-          type="button"
-          onClick={onLogout}
-        >
-          Logout
+        <button className="ui-button ui-button--ghost ui-button--md ui-button--full sidebar-logout" type="button" onClick={onLogout}>
+          Leave SAVR
         </button>
       </div>
     </aside>
