@@ -20,6 +20,8 @@ class DescribeYourNightRequest(BaseModel):
 
 class SurpriseMeRequest(BaseModel):
     include_drinks: bool = False
+    exclude_restaurant_ids: list[int] = Field(default_factory=list)
+    count: int = Field(default=5, ge=1, le=5)
 
 
 class ScoreBreakdownItem(BaseModel):

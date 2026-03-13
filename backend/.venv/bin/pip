@@ -1,5 +1,5 @@
 #!/bin/sh
-'''exec' "/Users/josepablosamano/Desktop/COMP 3663 Soft Eng 2/Recomendations App/context-aware-dining-platform/backend/.venv/bin/python3" "$0" "$@"
+'''exec' "/Users/josepablosamano/Desktop/COMP 3663 Soft Eng 2/Recomendations App/context-aware-dining-platform/backend/.venv/bin/python" "$0" "$@"
 ' '''
 # -*- coding: utf-8 -*-
 import re

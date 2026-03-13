@@ -89,10 +89,19 @@ class RecommendationService:
     def surprise_me(self, user: User, payload: SurpriseMeRequest) -> RecommendationResponse:
         restaurants = self.restaurant_repository.list_restaurants_with_details()
         preference = user.preference
+        profile = user.profile
 
         preferred_atmosphere = preference.atmosphere_preferences if preference else []
         preferred_cuisines = preference.cuisine_preferences if preference else []
         preferred_social = preference.social_preferences if preference else []
+        favorite_restaurant_names = set(profile.favorite_restaurants if profile else [])
+
+        experiences = self.experience_repository.list_by_user_id(user.id)
+        experienced_restaurant_ids = {
+            experience.restaurant_id
+            for experience in experiences
+            if experience.restaurant_id is not None
+        }
 
         ranked = self._score_restaurants(
             user=user,
@@ -107,6 +116,21 @@ class RecommendationService:
             drinks_focus=payload.include_drinks,
             atmosphere=preferred_atmosphere,
         )
+
+        adjusted = self._apply_surprise_novelty(
+            ranked=ranked,
+            experienced_restaurant_ids=experienced_restaurant_ids,
+            favorite_restaurant_names=favorite_restaurant_names,
+        )
+
+        excluded_ids = set(payload.exclude_restaurant_ids or [])
+        filtered = [item for item in adjusted if item.restaurant_id not in excluded_ids]
+
+        if len(filtered) < payload.count:
+            filtered = adjusted
+
+        final_results = filtered[: payload.count]
+
         return RecommendationResponse(
             mode="surprise-me",
             engine_version=self.ENGINE_VERSION,
@@ -120,8 +144,26 @@ class RecommendationService:
                 drinks_focus=payload.include_drinks,
                 atmosphere=preferred_atmosphere,
             ),
-            results=ranked,
+            results=final_results,
         )
+
+    def _apply_surprise_novelty(
+        self,
+        ranked: list[RecommendationItem],
+        experienced_restaurant_ids: set[int],
+        favorite_restaurant_names: set[str],
+    ) -> list[RecommendationItem]:
+        def sort_key(item: RecommendationItem):
+            unseen_bonus = 1 if item.restaurant_id not in experienced_restaurant_ids else 0
+            favorite_bonus = 1 if item.restaurant_name in favorite_restaurant_names else 0
+            return (
+                unseen_bonus,
+                favorite_bonus,
+                item.score,
+                -item.restaurant_id,
+            )
+
+        return sorted(ranked, key=sort_key, reverse=True)
 
     def _timestamp(self) -> str:
         return datetime.now(timezone.utc).isoformat()

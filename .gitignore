@@ -1,21 +1,26 @@
-# Mac
+# macOS
 .DS_Store
 
-# Python
-venv/
-.venv/
+# frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env.local
+frontend/.env.production.local
+
+# backend
+backend/.venv/
+backend/.venv_test/
+backend/__pycache__/
+backend/.pytest_cache/
+backend/*.pyc
+backend/*.sqlite3
+
+# general python
 __pycache__/
-*.pyc
+*.py[cod]
 
-# Environment variables
+# env files
 .env
-
-# Node
-node_modules/
-
-# Build folders
-dist/
-build/
-
-# Archives
-*.zip
+.env.*
+!.env.example

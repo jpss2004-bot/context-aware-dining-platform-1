@@ -78,11 +78,12 @@ const modeMeta: Record<
   surprise: {
     eyebrow: "Discovery mode",
     title: "Let SAVR Surprise You",
-    subtitle: "Get recommendationes quickly with minimal friction.",
+    subtitle:
+      "Get five personalized recommendations that refresh each time while still respecting your profile, history, and saved preferences.",
     bullets: [
-      "Fastest path to discovery.",
-      "Uses your saved preferences when available.",
-      "Good for novelty and low-effort browsing."
+      "Generates a fresh five-option set each time when possible.",
+      "Uses your profile, favorites, and experience history to stay personal.",
+      "Lets you decide whether drink-friendly places should be prioritized."
     ]
   }
 };
@@ -358,6 +359,7 @@ export default function RecommendationsPage() {
   const [buildForm, setBuildForm] = useState<BuildFormState>(initialBuildForm);
   const [describeText, setDescribeText] = useState("");
   const [includeDrinks, setIncludeDrinks] = useState(false);
+  const [lastSurpriseRestaurantIds, setLastSurpriseRestaurantIds] = useState<number[]>([]);
 
   const activeMeta = modeMeta[mode];
 
@@ -482,9 +484,40 @@ export default function RecommendationsPage() {
   }
 
   async function handleSurprise() {
-    await runRequest("/recommendations/surprise-me", {
-      include_drinks: includeDrinks
-    });
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const data = await apiRequest<RecommendationResponse>("/recommendations/surprise-me", {
+        method: "POST",
+        body: {
+          include_drinks: includeDrinks,
+          exclude_restaurant_ids: lastSurpriseRestaurantIds,
+          count: 5
+        }
+      });
+
+      const recs = Array.isArray(data.results) ? data.results : [];
+
+      setResults(recs);
+      setLastResponse(data);
+      setLastSurpriseRestaurantIds(recs.map((item) => item.restaurant_id));
+
+      setSuccess(
+        recs.length > 0
+          ? `Generated ${recs.length} surprise recommendation${recs.length === 1 ? "" : "s"}.`
+          : "Request completed, but no surprise recommendations were returned."
+      );
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to generate surprise recommendations.";
+      setError(message);
+      setResults([]);
+      setLastResponse(null);
+    } finally {
+      setLoading(false);
+    }
   }
 
   function selectSingle(field: SingleBuildField, value: string) {
@@ -829,26 +862,48 @@ export default function RecommendationsPage() {
           {mode === "surprise" ? (
             <div className="form">
               <div className="item">
-                <strong>Low-friction discovery</strong>
+                <strong>Personalized surprise mode</strong>
                 <p className="muted" style={{ marginBottom: 0 }}>
-                  This mode sends a minimal valid backend payload and uses your saved
-                  onboarding preferences when available.
+                  SAVR uses your saved profile, favorite restaurants, and dining history to
+                  choose five recommendations that feel personal instead of purely random.
                 </p>
               </div>
 
-              <div className="form-row">
-                <label htmlFor="include_drinks">Include drinks</label>
-                <input
-                  id="include_drinks"
-                  type="checkbox"
-                  checked={includeDrinks}
-                  onChange={(e) => setIncludeDrinks(e.target.checked)}
-                />
+              <div className="build-section">
+                <div className="build-section__copy">
+                  <strong>Should drinks matter in this surprise run?</strong>
+                  <p className="muted">
+                    Turn this on when you want bars, wine-forward spaces, breweries, or drink-friendly venues to matter more.
+                  </p>
+                </div>
+                <div className="build-block-grid build-block-grid--compact">
+                  {yesNoOptions.map((option) => {
+                    const active = includeDrinks === (option.value === "yes");
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className={active ? "build-block active" : "build-block"}
+                        onClick={() => setIncludeDrinks(option.value === "yes")}
+                      >
+                        <span className="build-block__label">{option.label}</span>
+                        {option.hint ? <span className="build-block__hint">{option.hint}</span> : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="item">
+                <strong>Fresh results each time</strong>
+                <p className="muted" style={{ marginBottom: 0 }}>
+                  Each new surprise request excludes the last five surprise results when possible, so the next run feels fresh while staying aligned with your profile.
+                </p>
               </div>
 
               <div className="button-row">
                 <Button onClick={handleSurprise} disabled={loading}>
-                  {loading ? "Finding a surprise..." : "Surprise me"}
+                  {loading ? "Finding a new surprise..." : "Let SAVR surprise me"}
                 </Button>
               </div>
             </div>

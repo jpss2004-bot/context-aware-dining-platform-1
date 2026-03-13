@@ -1,8 +1,14 @@
 import { clearStoredToken, getStoredToken } from "./auth";
 
+const ENV_API_BASE_URL =
+  (import.meta as ImportMeta & { env: { VITE_API_BASE_URL?: string } }).env.VITE_API_BASE_URL;
+
 const API_BASE_URL =
-  (import.meta as ImportMeta & { env: { VITE_API_BASE_URL?: string } }).env.VITE_API_BASE_URL ||
-  "http://127.0.0.1:8000/api";
+  ENV_API_BASE_URL ||
+  (typeof window !== "undefined" &&
+  (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+    ? "http://127.0.0.1:8000/api"
+    : `${window.location.origin}/api`);
 
 type RequestOptions = {
   method?: string;
