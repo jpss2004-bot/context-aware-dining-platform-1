@@ -1,4 +1,4 @@
-import { Link, NavLink , type NavLinkRenderProps } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 type SidebarProps = {
   userName?: string;
@@ -43,7 +43,7 @@ export default function Sidebar({ userName, onLogout }: SidebarProps) {
           <NavLink
             key={item.to}
             to={item.to}
-            className={({ isActive }: NavLinkRenderProps) =>
+            className={({ isActive }) =>
               ["sidebar-link", isActive ? "sidebar-link--active" : ""]
                 .filter(Boolean)
                 .join(" ")
