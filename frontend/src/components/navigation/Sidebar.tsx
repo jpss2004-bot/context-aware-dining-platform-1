@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 type SidebarProps = {
   userName?: string;
@@ -7,7 +7,7 @@ type SidebarProps = {
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", short: "DB" },
-  { to: "/onboarding", label: "Profile", short: "PF" },
+  { to: "/profile", label: "Profile", short: "PF" },
   { to: "/recommendations", label: "Recommendations", short: "RC" },
   { to: "/restaurants", label: "Restaurants", short: "RS" },
   { to: "/experiences", label: "Experiences", short: "EX" }
@@ -34,7 +34,7 @@ export default function Sidebar({ userName, onLogout }: SidebarProps) {
         <strong className="sidebar-user-name">{userName || "Guest user"}</strong>
 
         <p className="muted">
-          Explore restaurants, shape your profile, and discover more relevant dining experiences.
+          Explore restaurants, update your profile, and discover dining experiences that fit your style.
         </p>
       </div>
 
@@ -55,9 +55,18 @@ export default function Sidebar({ userName, onLogout }: SidebarProps) {
         ))}
       </nav>
 
+      <div className="sidebar-quick-actions">
+        <Link className="ui-button ui-button--secondary ui-button--md ui-button--full" to="/profile/preferences">
+          Edit preferences
+        </Link>
+        <Link className="ui-button ui-button--ghost ui-button--md ui-button--full" to="/experiences/new">
+          Log an experience
+        </Link>
+      </div>
+
       <div className="sidebar-footer">
         <button
-          className="button ghost sidebar-logout"
+          className="ui-button ui-button--ghost ui-button--md ui-button--full sidebar-logout"
           type="button"
           onClick={onLogout}
         >

@@ -98,17 +98,17 @@ export default function DashboardPage() {
     {
       title: "Review your profile",
       description:
-        "Make sure your taste, pace, drink, and atmosphere selections reflect the kind of dining experience you actually want."
+        "Visit your dedicated profile page to review saved signals and decide what to refine."
     },
     {
       title: "Explore restaurants",
       description:
-        "Browse the restaurant catalog and confirm your favorites align with the venues available in the system."
+        "Browse the venue catalog and open a dedicated page for any restaurant you want to inspect."
     },
     {
-      title: "Generate recommendations",
+      title: "Log real dining moments",
       description:
-        "Use the recommendation workflow after your profile is current so the system has stronger context."
+        "Use the dedicated experience logging page to save what actually worked after each outing."
     }
   ];
 
@@ -121,13 +121,14 @@ export default function DashboardPage() {
             <h1 className="page-title">Welcome back, {firstName}</h1>
             <p className="muted" style={{ maxWidth: "760px", marginBottom: 0 }}>
               Use this space to review your profile, check what SAVR already knows about
-              your dining style, and move into recommendations when you are ready.
+              your dining style, and move into the parts of the product that now live on
+              their own dedicated pages.
             </p>
           </div>
 
           <div>
             <Badge>SAVR</Badge>
-            <Badge tone="accent">Profile-aware</Badge>
+            <Badge tone="accent">Structured navigation</Badge>
             <Badge tone="success">Ready to explore</Badge>
           </div>
 
@@ -135,11 +136,11 @@ export default function DashboardPage() {
             <Link to="/recommendations">
               <Button>Find recommendations</Button>
             </Link>
-            <Link to="/restaurants">
-              <Button variant="ghost">Browse restaurants</Button>
-            </Link>
-            <Link to="/onboarding">
+            <Link to="/profile">
               <Button variant="secondary">Edit profile</Button>
+            </Link>
+            <Link to="/experiences/new">
+              <Button variant="ghost">Log an experience</Button>
             </Link>
           </div>
         </div>
@@ -202,11 +203,13 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              <div className="item">
-                <strong>Dining note</strong>
-                <p className="muted" style={{ marginBottom: 0 }}>
-                  {profileState?.bio?.trim() || "No dining note saved yet."}
-                </p>
+              <div className="button-row">
+                <Link to="/profile">
+                  <Button variant="secondary">Open profile page</Button>
+                </Link>
+                <Link to="/profile/preferences">
+                  <Button variant="ghost">Update preferences</Button>
+                </Link>
               </div>
             </div>
           )}
@@ -214,7 +217,7 @@ export default function DashboardPage() {
 
         <Card
           title="Suggested next steps"
-          subtitle="A simple path for users exploring the product for the first time"
+          subtitle="A cleaner path through the app for real product testing"
           actions={<Badge tone="success">Guide</Badge>}
         >
           <div className="list">
@@ -234,8 +237,11 @@ export default function DashboardPage() {
           <hr />
 
           <div className="button-row">
-            <Link to="/onboarding">
-              <Button variant="ghost">Review profile</Button>
+            <Link to="/restaurants">
+              <Button variant="ghost">Browse restaurants</Button>
+            </Link>
+            <Link to="/experiences">
+              <Button variant="secondary">View history</Button>
             </Link>
             <Link to="/recommendations">
               <Button>Start exploring</Button>

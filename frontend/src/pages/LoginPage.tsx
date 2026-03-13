@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
+import PasswordField from "../components/forms/PasswordField";
 import { useAuth } from "../context/AuthContext";
 
 const PASSWORD_HINT = "Passwords must be between 8 and 128 characters.";
@@ -37,18 +38,16 @@ export default function LoginPage() {
   return (
     <div className="auth-shell">
       <Card
-        className="auth-card"
-        title="Welcome back to SAVR"
-        subtitle="Sign in to access your taste profile, curated matches, venue guide, and saved dining memories."
-        actions={<Badge tone="accent">Secure access</Badge>}
+        className="auth-card auth-card--focused"
+        title="Welcome to SAVR"
+        subtitle="Log in with your existing account or create a new one to start building a more personal dining experience."
+        actions={<Badge tone="accent">Login</Badge>}
       >
-        <div className="item">
-          <strong>What opens inside SAVR</strong>
-          <div style={{ marginTop: "0.8rem", display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-            <Badge>Curated matches</Badge>
-            <Badge tone="accent">Venue discovery</Badge>
-            <Badge tone="success">Saved dining memories</Badge>
-          </div>
+        <div className="auth-intro-block">
+          <strong>Two clear paths</strong>
+          <p className="muted" style={{ marginBottom: 0 }}>
+            Use your existing account to continue, or create a new account if this is your first time using SAVR.
+          </p>
         </div>
 
         {error ? <div className="error">{error}</div> : null}
@@ -60,36 +59,32 @@ export default function LoginPage() {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="jp@example.com"
+              placeholder="Enter your email"
               autoComplete="email"
             />
           </div>
 
-          <div className="form-row">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              autoComplete="current-password"
-            />
-            <small className="muted">{PASSWORD_HINT}</small>
-          </div>
+          <PasswordField
+            label="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter your password"
+            autoComplete="current-password"
+            hint={PASSWORD_HINT}
+          />
 
           <Button type="submit" disabled={isSubmitting} fullWidth>
-            {isSubmitting ? "Signing in..." : "Enter SAVR"}
+            {isSubmitting ? "Signing in..." : "Log in"}
           </Button>
         </form>
 
-        <div className="item">
-          <strong>New here?</strong>
-          <p className="muted" style={{ marginBottom: "0.9rem" }}>
-            Create your SAVR profile to unlock onboarding and personalized recommendations.
+        <div className="auth-switch-card">
+          <strong>Create a new account</strong>
+          <p className="muted" style={{ marginBottom: "0.85rem" }}>
+            New to SAVR? Create an account to build your dining profile and start exploring recommendations.
           </p>
-          <Link className="ui-button ui-button--secondary ui-button--full" to="/register">
-            Create your SAVR profile
+          <Link className="ui-button ui-button--secondary ui-button--md ui-button--full" to="/register">
+            Create my account
           </Link>
         </div>
       </Card>

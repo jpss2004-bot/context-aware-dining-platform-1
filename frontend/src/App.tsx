@@ -6,9 +6,12 @@ import { useAuth } from "./context/AuthContext";
 import DashboardPage from "./pages/DashboardPage";
 import ExperiencesPage from "./pages/ExperiencesPage";
 import LoginPage from "./pages/LoginPage";
+import NewExperiencePage from "./pages/NewExperiencePage";
 import OnboardingPage from "./pages/OnboardingPage";
+import ProfilePage from "./pages/ProfilePage";
 import RecommendationsPage from "./pages/RecommendationsPage";
 import RegisterPage from "./pages/RegisterPage";
+import RestaurantDetailPage from "./pages/RestaurantDetailPage";
 import RestaurantsPage from "./pages/RestaurantsPage";
 
 function AppEntryRedirect() {
@@ -52,6 +55,28 @@ export default function App() {
       />
 
       <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <ProfilePage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile/preferences"
+        element={
+          <ProtectedRoute allowIncompleteOnboarding>
+            <Layout>
+              <OnboardingPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/onboarding"
         element={
           <ProtectedRoute allowIncompleteOnboarding redirectCompletedUsersTo="/dashboard">
@@ -74,6 +99,28 @@ export default function App() {
       />
 
       <Route
+        path="/restaurants"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <RestaurantsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/restaurants/:restaurantId"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <RestaurantDetailPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/experiences"
         element={
           <ProtectedRoute>
@@ -85,11 +132,11 @@ export default function App() {
       />
 
       <Route
-        path="/restaurants"
+        path="/experiences/new"
         element={
           <ProtectedRoute>
             <Layout>
-              <RestaurantsPage />
+              <NewExperiencePage />
             </Layout>
           </ProtectedRoute>
         }

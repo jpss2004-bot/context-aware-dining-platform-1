@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
 import Card from "../ui/Card";
@@ -7,6 +9,7 @@ type RestaurantCardProps = {
   restaurant: RestaurantListItem;
   onSelect?: (restaurantId: number) => void;
   isActive?: boolean;
+  detailPath?: string;
 };
 
 function buildMeta(restaurant: RestaurantListItem) {
@@ -18,7 +21,8 @@ function buildMeta(restaurant: RestaurantListItem) {
 export default function RestaurantCard({
   restaurant,
   onSelect,
-  isActive = false
+  isActive = false,
+  detailPath
 }: RestaurantCardProps) {
   return (
     <Card
@@ -44,16 +48,22 @@ export default function RestaurantCard({
           {restaurant.pace ? <Badge tone="success">{restaurant.pace}</Badge> : null}
         </div>
 
-        {onSelect ? (
-          <div className="button-row">
+        <div className="button-row">
+          {onSelect ? (
             <Button
               variant={isActive ? "secondary" : "ghost"}
               onClick={() => onSelect(restaurant.id)}
             >
               {isActive ? "Selected" : "View details"}
             </Button>
-          </div>
-        ) : null}
+          ) : null}
+
+          {detailPath ? (
+            <Link className="ui-button ui-button--ghost ui-button--md" to={detailPath}>
+              Open venue page
+            </Link>
+          ) : null}
+        </div>
       </div>
     </Card>
   );

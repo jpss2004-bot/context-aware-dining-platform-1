@@ -4,50 +4,98 @@ type NavbarProps = {
   userName?: string;
 };
 
-const titleMap: Record<
-  string,
-  { eyebrow: string; title: string; subtitle: string }
-> = {
-  "/dashboard": {
-    eyebrow: "Home",
-    title: "Your SAVR dashboard",
-    subtitle:
-      "Review your saved dining preferences, check profile readiness, and continue into recommendations."
-  },
-  "/onboarding": {
-    eyebrow: "Profile",
-    title: "Update your dining profile",
-    subtitle:
-      "Tell SAVR more about your tastes, habits, and ideal dining atmosphere."
-  },
-  "/recommendations": {
-    eyebrow: "Recommendations",
-    title: "Find your next dining match",
-    subtitle:
-      "Explore dining recommendations shaped by your profile, preferences, and context."
-  },
-  "/restaurants": {
-    eyebrow: "Restaurants",
-    title: "Browse available venues",
-    subtitle:
-      "Review the restaurant catalog and discover places that may fit your dining style."
-  },
-  "/experiences": {
-    eyebrow: "Experiences",
-    title: "Track dining memories",
-    subtitle:
-      "Review and log dining experiences to help strengthen future recommendations."
+function getPageContent(pathname: string) {
+  if (pathname === "/dashboard") {
+    return {
+      eyebrow: "Home",
+      title: "Your SAVR dashboard",
+      subtitle:
+        "Review your saved dining preferences, check profile readiness, and continue into recommendations."
+    };
   }
-};
+
+  if (pathname === "/profile") {
+    return {
+      eyebrow: "Profile",
+      title: "Your SAVR profile",
+      subtitle:
+        "Review your account information, saved preferences, and the signals shaping your dining recommendations."
+    };
+  }
+
+  if (pathname === "/profile/preferences") {
+    return {
+      eyebrow: "Profile editing",
+      title: "Update your dining preferences",
+      subtitle:
+        "Refine the taste, pace, atmosphere, and dining memory signals that guide SAVR."
+    };
+  }
+
+  if (pathname === "/onboarding") {
+    return {
+      eyebrow: "Onboarding",
+      title: "Set up your SAVR profile",
+      subtitle:
+        "Complete your initial dining profile so SAVR can begin tailoring recommendations."
+    };
+  }
+
+  if (pathname === "/recommendations") {
+    return {
+      eyebrow: "Recommendations",
+      title: "Find your next dining match",
+      subtitle:
+        "Explore dining recommendations shaped by your profile, preferences, and context."
+    };
+  }
+
+  if (pathname === "/restaurants") {
+    return {
+      eyebrow: "Restaurants",
+      title: "Browse available venues",
+      subtitle:
+        "Review the restaurant catalog and choose a place to inspect in more detail."
+    };
+  }
+
+  if (pathname.startsWith("/restaurants/")) {
+    return {
+      eyebrow: "Restaurant detail",
+      title: "Venue overview",
+      subtitle:
+        "Inspect menu signals, atmosphere, and restaurant details in a dedicated venue page."
+    };
+  }
+
+  if (pathname === "/experiences") {
+    return {
+      eyebrow: "Experiences",
+      title: "Your dining history",
+      subtitle:
+        "Review the dining moments you have already saved and use them to guide future recommendations."
+    };
+  }
+
+  if (pathname === "/experiences/new") {
+    return {
+      eyebrow: "New experience",
+      title: "Log a dining experience",
+      subtitle:
+        "Capture a visit in its own dedicated page so SAVR can learn from what actually worked."
+    };
+  }
+
+  return {
+    eyebrow: "Workspace",
+    title: "SAVR",
+    subtitle: "A structured dining discovery workspace designed for real user testing."
+  };
+}
 
 export default function Navbar({ userName }: NavbarProps) {
   const location = useLocation();
-
-  const content = titleMap[location.pathname] ?? {
-    eyebrow: "Workspace",
-    title: "SAVR",
-    subtitle: "A cleaner dining discovery workspace designed for real user testing."
-  };
+  const content = getPageContent(location.pathname);
 
   const today = new Date().toLocaleDateString(undefined, {
     weekday: "short",
