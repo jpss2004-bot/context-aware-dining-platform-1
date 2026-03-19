@@ -31,13 +31,34 @@ function renderSignalList(values: string[], emptyText: string) {
   );
 }
 
+type SavedContentResponse = {
+  favorite_restaurants: string[];
+  favorite_dining_experiences: string[];
+  user_presets: Array<{
+    preset_id: string;
+    name: string;
+    description?: string | null;
+    updated_at: string;
+  }>;
+  recent_experiences: Array<{
+    experience_id: number;
+    title?: string | null;
+    restaurant_name?: string | null;
+    overall_rating?: number | null;
+    created_at: string;
+  }>;
+};
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const firstName = user?.first_name || "Guest";
 
   const [profileState, setProfileState] = useState<OnboardingState | null>(null);
+  const [savedContent, setSavedContent] = useState<SavedContentResponse | null>(null);
   const [profileError, setProfileError] = useState("");
+  const [savedContentError, setSavedContentError] = useState("");
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [isLoadingSavedContent, setIsLoadingSavedContent] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -68,6 +89,35 @@ export default function DashboardPage() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSavedContent() {
+      try {
+        const data = await apiRequest<SavedContentResponse>("/users/me/saved-content");
+        if (!cancelled) {
+          setSavedContent(data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setSavedContentError(
+            err instanceof Error ? err.message : "We could not load your saved content summary."
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingSavedContent(false);
+        }
+      }
+    }
+
+    void loadSavedContent();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const quickPanels = useMemo(
     () => [
       {
@@ -85,13 +135,13 @@ export default function DashboardPage() {
         tone: "accent" as const
       },
       {
-        title: "Atmosphere preferences",
-        value: String(profileState?.atmosphere_preferences.length ?? 0),
-        subtitle: "Saved mood and setting signals available for matching.",
+        title: "Saved presets",
+        value: String(savedContent?.user_presets.length ?? 0),
+        subtitle: "Reusable builder configurations saved only to your account.",
         tone: "default" as const
       }
     ],
-    [profileState]
+    [profileState, savedContent]
   );
 
   const workflowSteps = [
@@ -101,9 +151,9 @@ export default function DashboardPage() {
         "Visit your dedicated profile page to review saved signals and decide what to refine."
     },
     {
-      title: "Explore restaurants",
+      title: "Review your saved presets",
       description:
-        "Browse the venue catalog and open a dedicated page for any restaurant you want to inspect."
+        "Open the new saved-presets page to inspect account-owned presets and return to editing quickly."
     },
     {
       title: "Log real dining moments",
@@ -121,8 +171,8 @@ export default function DashboardPage() {
             <h1 className="page-title">Welcome back, {firstName}</h1>
             <p className="muted" style={{ maxWidth: "760px", marginBottom: 0 }}>
               Use this space to review your profile, check what SAVR already knows about
-              your dining style, and move into the parts of the product that now live on
-              their own dedicated pages.
+              your dining style, inspect saved presets, and move into the parts of the product
+              that now live on their own dedicated pages.
             </p>
           </div>
 
@@ -139,8 +189,8 @@ export default function DashboardPage() {
             <Link to="/profile">
               <Button variant="secondary">Edit profile</Button>
             </Link>
-            <Link to="/experiences/new">
-              <Button variant="ghost">Log an experience</Button>
+            <Link to="/profile/presets">
+              <Button variant="ghost">Open saved presets</Button>
             </Link>
           </div>
         </div>
@@ -216,9 +266,58 @@ export default function DashboardPage() {
         </Card>
 
         <Card
+          title="Saved content access"
+          subtitle="Direct routes into reusable account-owned recommendation data"
+          actions={<Badge tone="success">Account data</Badge>}
+        >
+          {isLoadingSavedContent ? (
+            <p className="muted" style={{ marginBottom: 0 }}>Loading saved content...</p>
+          ) : savedContentError ? (
+            <div className="error">{savedContentError}</div>
+          ) : (
+            <div className="list">
+              <div className="item">
+                <strong>User presets</strong>
+                <p className="muted" style={{ marginBottom: 0 }}>
+                  {savedContent?.user_presets.length ?? 0} saved to your account
+                </p>
+              </div>
+
+              <div className="item">
+                <strong>Recent experiences</strong>
+                <p className="muted" style={{ marginBottom: 0 }}>
+                  {savedContent?.recent_experiences.length ?? 0} recent entries
+                </p>
+              </div>
+
+              <div className="item">
+                <strong>Favorite dining experiences</strong>
+                <p className="muted" style={{ marginBottom: 0 }}>
+                  {savedContent?.favorite_dining_experiences.length ?? 0} saved
+                </p>
+              </div>
+
+              <div className="button-row">
+                <Link to="/profile/presets">
+                  <Button>Open saved presets</Button>
+                </Link>
+                <Link to="/recommendations/build">
+                  <Button variant="secondary">Build from a preset</Button>
+                </Link>
+                <Link to="/experiences">
+                  <Button variant="ghost">View history</Button>
+                </Link>
+              </div>
+            </div>
+          )}
+        </Card>
+      </section>
+
+      <section className="grid">
+        <Card
           title="Suggested next steps"
           subtitle="A cleaner path through the app for real product testing"
-          actions={<Badge tone="success">Guide</Badge>}
+          actions={<Badge tone="accent">Guide</Badge>}
         >
           <div className="list">
             {workflowSteps.map((step, index) => (
@@ -232,20 +331,6 @@ export default function DashboardPage() {
                 </p>
               </div>
             ))}
-          </div>
-
-          <hr />
-
-          <div className="button-row">
-            <Link to="/restaurants">
-              <Button variant="ghost">Browse restaurants</Button>
-            </Link>
-            <Link to="/experiences">
-              <Button variant="secondary">View history</Button>
-            </Link>
-            <Link to="/recommendations">
-              <Button>Start exploring</Button>
-            </Link>
           </div>
         </Card>
       </section>

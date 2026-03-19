@@ -57,6 +57,7 @@ def reset_and_seed() -> None:
             raise RuntimeError("duplicate restaurant names remain after reseed")
 
         print("catalog is clean: no duplicate restaurant names found")
+        print("patch 1 foundation columns are available for richer restaurant metadata and onboarding budget fields")
 
     except Exception:
         db.rollback()

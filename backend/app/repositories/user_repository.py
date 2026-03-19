@@ -7,21 +7,18 @@ class UserRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_by_email(self, email: str):
-        return (
-            self.db.query(User)
-            .options(joinedload(User.profile), joinedload(User.preference))
-            .filter(User.email == email.lower())
-            .first()
+    def _base_user_query(self):
+        return self.db.query(User).options(
+            joinedload(User.profile),
+            joinedload(User.preference),
+            joinedload(User.presets),
         )
 
+    def get_by_email(self, email: str):
+        return self._base_user_query().filter(User.email == email.lower()).first()
+
     def get_by_id(self, user_id: int):
-        return (
-            self.db.query(User)
-            .options(joinedload(User.profile), joinedload(User.preference))
-            .filter(User.id == user_id)
-            .first()
-        )
+        return self._base_user_query().filter(User.id == user_id).first()
 
     def create_user(self, first_name: str, last_name: str, email: str, hashed_password: str):
         user = User(
@@ -47,6 +44,9 @@ class UserRepository:
         atmosphere_preferences: list[str],
         spice_tolerance: str = None,
         price_sensitivity: str = None,
+        budget_min_per_person: float = None,
+        budget_max_per_person: float = None,
+        onboarding_version: str = None,
     ):
         preference = self.db.query(UserPreference).filter(UserPreference.user_id == user_id).first()
 
@@ -63,6 +63,9 @@ class UserRepository:
         preference.atmosphere_preferences = atmosphere_preferences
         preference.spice_tolerance = spice_tolerance
         preference.price_sensitivity = price_sensitivity
+        preference.budget_min_per_person = budget_min_per_person
+        preference.budget_max_per_person = budget_max_per_person
+        preference.onboarding_version = onboarding_version
 
         self.db.commit()
         self.db.refresh(preference)

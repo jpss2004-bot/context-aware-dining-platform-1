@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session, joinedload
 
-from app.models.restaurant import MenuItem, Restaurant, Tag
+from app.models.restaurant import MenuItem, Restaurant, Tag, VenueEvent
 
 
 class RestaurantRepository:
@@ -8,13 +8,19 @@ class RestaurantRepository:
         self.db = db
 
     def list_restaurants(self):
-        return self.db.query(Restaurant).order_by(Restaurant.name.asc()).all()
+        return (
+            self.db.query(Restaurant)
+            .options(joinedload(Restaurant.events))
+            .order_by(Restaurant.name.asc())
+            .all()
+        )
 
     def get_restaurant_by_id(self, restaurant_id: int):
         return (
             self.db.query(Restaurant)
             .options(
                 joinedload(Restaurant.tags),
+                joinedload(Restaurant.events),
                 joinedload(Restaurant.menu_items).joinedload(MenuItem.tags),
             )
             .filter(Restaurant.id == restaurant_id)
@@ -26,6 +32,7 @@ class RestaurantRepository:
             self.db.query(Restaurant)
             .options(
                 joinedload(Restaurant.tags),
+                joinedload(Restaurant.events),
                 joinedload(Restaurant.menu_items).joinedload(MenuItem.tags),
             )
             .order_by(Restaurant.name.asc())
@@ -45,3 +52,6 @@ class RestaurantRepository:
 
     def list_tags(self):
         return self.db.query(Tag).order_by(Tag.category.asc(), Tag.name.asc()).all()
+
+    def list_events(self):
+        return self.db.query(VenueEvent).order_by(VenueEvent.name.asc()).all()

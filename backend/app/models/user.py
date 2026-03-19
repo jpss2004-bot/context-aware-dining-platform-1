@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, JSON, String, Text
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -40,6 +40,11 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
+    presets: Mapped[list["UserPreset"]] = relationship(
+        "UserPreset",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
 
 
 class UserProfile(Base):
@@ -74,6 +79,9 @@ class UserPreference(Base):
     atmosphere_preferences: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
     spice_tolerance: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     price_sensitivity: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    budget_min_per_person: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    budget_max_per_person: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    onboarding_version: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
@@ -85,3 +93,4 @@ class UserPreference(Base):
 
 
 from app.models.experience import Experience  # noqa: E402
+from app.models.preset import UserPreset  # noqa: E402

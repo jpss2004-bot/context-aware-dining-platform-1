@@ -1,0 +1,68 @@
+import { useNavigate } from "react-router-dom";
+
+import Badge from "../components/ui/Badge";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
+
+const options = [
+  {
+    key: "build",
+    title: "Build Your Night",
+    subtitle: "Step-by-step flow",
+    description:
+      "Answer structured questions one page at a time so the experience feels guided instead of cluttered.",
+    cta: "Open build flow",
+    path: "/recommendations/build"
+  },
+  {
+    key: "describe",
+    title: "Describe the Night",
+    subtitle: "Natural language flow",
+    description:
+      "Write the kind of dining experience you want in your own words, then generate recommendations on a separate results page.",
+    cta: "Open describe flow",
+    path: "/recommendations/describe"
+  },
+  {
+    key: "surprise",
+    title: "Surprise Me",
+    subtitle: "Fast discovery flow",
+    description:
+      "Skip the long form and go directly into a faster recommendation path with minimal input and a dedicated results page.",
+    cta: "Open surprise flow",
+    path: "/recommendations/surprise"
+  }
+] as const;
+
+export default function RecommendationsPage() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="grid" style={{ gap: "1.25rem" }}>
+      <section className="card">
+        <p className="navbar-eyebrow">Recommendation flow</p>
+        <h1 className="page-title">Choose how you want to generate your night</h1>
+        <p className="muted" style={{ maxWidth: "760px", marginBottom: 0 }}>
+          Pick one clear path, move into its own page, then view the output on a dedicated results screen.
+        </p>
+      </section>
+
+      <section className="grid grid-3">
+        {options.map((option) => (
+          <Card
+            key={option.key}
+            title={option.title}
+            subtitle={option.description}
+            actions={<Badge tone="accent">{option.subtitle}</Badge>}
+          >
+            <div className="button-row">
+              <Button onClick={() => navigate(option.path)} fullWidth>
+                {option.cta}
+              </Button>
+            </div>
+          </Card>
+        ))}
+      </section>
+    </div>
+  );
+}

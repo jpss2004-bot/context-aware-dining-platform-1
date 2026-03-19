@@ -17,6 +17,9 @@ type RecommendationCardProps = {
   matchedSignals?: string[];
   penalizedSignals?: string[];
   scoreBreakdown?: ScoreBreakdownItem[];
+  suggestedDishes?: string[];
+  suggestedDrinks?: string[];
+  activeEventMatches?: string[];
   ctaLabel?: string;
   onClick?: () => void;
 };
@@ -26,7 +29,8 @@ function formatScore(score?: number) {
     return null;
   }
 
-  return `${Math.round(score * 100)}% match`;
+  const clamped = Math.max(0, Math.min(score, 1));
+  return `${Math.round(clamped * 100)}% match`;
 }
 
 function confidenceTone(confidenceLevel?: string): "default" | "accent" | "success" | "warning" {
@@ -91,6 +95,9 @@ export default function RecommendationCard({
   matchedSignals = [],
   penalizedSignals = [],
   scoreBreakdown = [],
+  suggestedDishes = [],
+  suggestedDrinks = [],
+  activeEventMatches = [],
   ctaLabel = "View recommendation",
   onClick
 }: RecommendationCardProps) {
@@ -145,6 +152,45 @@ export default function RecommendationCard({
 
         {expanded ? (
           <div className="grid" style={{ gap: "0.85rem" }}>
+            {activeEventMatches.length > 0 ? (
+              <div className="item">
+                <strong>Event matches</strong>
+                <div style={{ display: "flex", gap: "0.45rem", flexWrap: "wrap", marginTop: "0.55rem" }}>
+                  {activeEventMatches.map((eventMatch) => (
+                    <Badge key={eventMatch} tone="accent">
+                      {eventMatch}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {suggestedDishes.length > 0 ? (
+              <div className="item">
+                <strong>Suggested dishes</strong>
+                <div style={{ display: "flex", gap: "0.45rem", flexWrap: "wrap", marginTop: "0.55rem" }}>
+                  {suggestedDishes.map((dish) => (
+                    <Badge key={dish} tone="success">
+                      {dish}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {suggestedDrinks.length > 0 ? (
+              <div className="item">
+                <strong>Suggested drinks</strong>
+                <div style={{ display: "flex", gap: "0.45rem", flexWrap: "wrap", marginTop: "0.55rem" }}>
+                  {suggestedDrinks.map((drink) => (
+                    <Badge key={drink} tone="accent">
+                      {drink}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
             {matchedSignals.length > 0 ? (
               <div className="item">
                 <strong>Matched signals</strong>

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_user
 from app.db.session import get_db
 from app.schemas.onboarding import (
+    OnboardingOptionsResponse,
     OnboardingRequest,
     OnboardingResponse,
     OnboardingStateResponse,
@@ -19,6 +20,13 @@ def get_onboarding(
     current_user=Depends(get_current_user),
 ):
     return OnboardingService(db).get_onboarding_state(current_user)
+
+
+@router.get("/options", response_model=OnboardingOptionsResponse)
+def get_onboarding_options(
+    db: Session = Depends(get_db),
+):
+    return OnboardingService(db).get_onboarding_options()
 
 
 @router.post("", response_model=OnboardingResponse)

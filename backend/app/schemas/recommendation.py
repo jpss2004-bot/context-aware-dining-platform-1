@@ -13,6 +13,25 @@ class BuildYourNightRequest(BaseModel):
     drinks_focus: bool = False
     atmosphere: list[str] = Field(default_factory=list)
 
+    towns: list[str] = Field(default_factory=list)
+    include_tags: list[str] = Field(default_factory=list)
+    exclude_tags: list[str] = Field(default_factory=list)
+    family_friendly: Optional[bool] = None
+    student_friendly: Optional[bool] = None
+    date_night: Optional[bool] = None
+    quick_bite: Optional[bool] = None
+    fast_food: Optional[bool] = None
+    requires_dine_in: Optional[bool] = None
+    requires_takeout: Optional[bool] = None
+    requires_delivery: Optional[bool] = None
+    requires_reservations: Optional[bool] = None
+    requires_live_music: Optional[bool] = None
+    requires_trivia: Optional[bool] = None
+    include_dish_hints: bool = True
+
+    preset_id: Optional[str] = None
+    use_preset_defaults: bool = True
+
 
 class DescribeYourNightRequest(BaseModel):
     prompt: str = Field(min_length=3, max_length=1000)
@@ -38,6 +57,23 @@ class RecommendationRequestSummary(BaseModel):
     drinks_focus: bool = False
     atmosphere: list[str] = Field(default_factory=list)
 
+    towns: list[str] = Field(default_factory=list)
+    include_tags: list[str] = Field(default_factory=list)
+    exclude_tags: list[str] = Field(default_factory=list)
+    family_friendly: Optional[bool] = None
+    student_friendly: Optional[bool] = None
+    date_night: Optional[bool] = None
+    quick_bite: Optional[bool] = None
+    fast_food: Optional[bool] = None
+    requires_dine_in: Optional[bool] = None
+    requires_takeout: Optional[bool] = None
+    requires_delivery: Optional[bool] = None
+    requires_reservations: Optional[bool] = None
+    requires_live_music: Optional[bool] = None
+    requires_trivia: Optional[bool] = None
+
+    preset_id: Optional[str] = None
+
 
 class RecommendationItem(BaseModel):
     restaurant_id: int
@@ -53,11 +89,12 @@ class RecommendationItem(BaseModel):
     score_breakdown: list[ScoreBreakdownItem] = Field(default_factory=list)
     suggested_dishes: list[str] = Field(default_factory=list)
     suggested_drinks: list[str] = Field(default_factory=list)
+    active_event_matches: list[str] = Field(default_factory=list)
 
 
 class RecommendationResponse(BaseModel):
     mode: str
-    engine_version: str = "phase45"
+    engine_version: str = "phase5-events-v1"
     generated_at: str
     request_summary: RecommendationRequestSummary
     results: list[RecommendationItem]
